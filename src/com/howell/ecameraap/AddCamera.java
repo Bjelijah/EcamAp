@@ -70,7 +70,6 @@ public class AddCamera extends Activity {
 	@Override  
 	    protected void onDestroy() {  
 	    super.onDestroy();  
-	    //Ӧ�õ����һ��Activity�ر�ʱӦ�ͷ�DB  
 	    mDBManager.closeDB();  
 	}  
 

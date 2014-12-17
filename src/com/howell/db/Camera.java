@@ -1,13 +1,11 @@
 package com.howell.db;
 
-import com.howell.ecameraap.SlideView;
-
 public class Camera {
 	public int _id;
 	public String name;
 	public String ip;
 	public int channel;
-	public SlideView slideView;
+//	public SlideView slideView;
 	public Camera(String name, String ip, int channel) {
 		super();
 		this.name = name;

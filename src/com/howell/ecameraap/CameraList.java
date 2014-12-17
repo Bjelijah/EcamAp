@@ -7,31 +7,27 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.TextPaint;
-import android.util.Log;
-import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
+import android.view.View.OnTouchListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.BaseAdapter;
 import android.widget.ImageButton;
-import android.widget.TextView;
+import android.widget.ListView;
 
 import com.example.com.howell.ecameraap.R;
 import com.howell.db.Camera;
 import com.howell.db.DBManager;
-import com.howell.ecameraap.SlideView.OnSlideListener;
 
-public class CameraList extends Activity implements OnItemClickListener, OnClickListener,
-	OnSlideListener {
+public class CameraList extends Activity implements OnItemClickListener{
 	private ImageButton addCam,back;
-	private ListViewCompat cameraList;
+	private ListView cameraList;
 	private ArrayList<Camera> cameras;
     private DBManager mDBManager; 
-    private CameraListAdapter adapter;
-    private SlideView mLastSlideViewWithStatusOn;
+    private ListAdapter adapter;
+    private boolean isMove = false;//限制滑动时触发OnItemClickListener的标志位
+    
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
@@ -63,20 +59,84 @@ public class CameraList extends Activity implements OnItemClickListener, OnClick
 //			System.out.println(c.toString());
 //		}
 		
-		adapter = new CameraListAdapter(this);
-		cameraList = (ListViewCompat)findViewById(R.id.camera_list);
+		adapter = new ListAdapter(this,cameras,mDBManager);
+		cameraList = (ListView)findViewById(R.id.camera_list);
 		cameraList.setAdapter(adapter);
 		cameraList.setOnItemClickListener(this);
+		
+		cameraList.setOnTouchListener(new OnTouchListener() {
+			
+			private View selectedView;
+			private float oldX;
+			private float oldY;
+			
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+			// TODO Auto-generated method stub
+			if (adapter.getSelectedView() == null) {
+				return false;
+			}
+			
+			switch (event.getAction()) {
+				case MotionEvent.ACTION_DOWN:
+					// 按下事件，获取用户要操作的项，和事件坐标
+					System.out.println("action down:"+isMove);
+					selectedView = adapter.getSelectedView();
+					oldX = event.getX();
+					oldY = event.getY();
+					
+					break;
+				case MotionEvent.ACTION_MOVE:
+					/*
+					* 移动事件，若y方向移动距离大于x方向移动距离，
+					* 则认为用户是想上下滚动列表。
+					* 否则，用户是想滑动列表的某一项。
+					*/
+					isMove = true;
+					System.out.println("action move:"+isMove);
+					
+					float distanceX=event.getX()-oldX;
+					float distanceY=event.getY()-oldY;
+					if(Math.abs(distanceX)>Math.abs(distanceY)){
+						selectedView.setX(selectedView.getX()+distanceX);
+						selectedView.setAlpha(Math.max(0.1f,1-Math.abs(selectedView.getX()/200)));
+					}
+					oldX=event.getX();
+					oldY=event.getY();
+					break;
+				case MotionEvent.ACTION_UP:
+					/*
+					* 弹起事件，根据x方向移动距离的大小，
+					* 判断要进行什么操作
+					*/
+					
+					if(Math.abs(selectedView.getX())>200){
+					//移动距离大于200px，则删除该项
+					//（直接删除会有点突兀，可增加确认对话框或删除动画等。）
+						adapter.delete();
+						//isMove = false;
+					}else{
+					//否则，将其还原
+						adapter.cancel();
+						isMove = false;
+					}
+					System.out.println("action up:"+isMove);
+					break;
+				
+				}
+				return false;
+				}
+			});
 	}
 	
-	public class CameraListAdapter extends BaseAdapter {
+/*	public class CameraListAdapter extends BaseAdapter {
 
-	    //private Context mContext;
-	    private LayoutInflater mInflater;
+	    private Context mContext;
+//	    private LayoutInflater mInflater;
 
 	    public CameraListAdapter(Context context) {
-	        //mContext = context;
-	        mInflater = getLayoutInflater();
+	        mContext = context;
+//	        mInflater = getLayoutInflater();
 	    }
 	        
 	    @Override
@@ -103,52 +163,31 @@ public class CameraList extends Activity implements OnItemClickListener, OnClick
 	        System.out.println("getView");
 	        Camera c = (Camera)getItem(position);
 	        ViewHolder holder;
-            SlideView slideView = (SlideView) convertView;
-            if (slideView == null) {
-                View itemView = mInflater.inflate(R.layout.camera_list_item, null);
+            if (convertView == null) {
+            	LayoutInflater layoutInflater = LayoutInflater.from(mContext);
+            	convertView = layoutInflater.inflate(R.layout.camera_list_item, null);
 
-                slideView = new SlideView(CameraList.this);
-                slideView.setContentView(itemView);
-
-                holder = new ViewHolder(slideView);
-                slideView.setOnSlideListener(CameraList.this);
-                slideView.setTag(holder);
+                holder = new ViewHolder();
+                holder.name = (TextView) convertView.findViewById(R.id.tv_camera_name);
+                holder.ip = (TextView) convertView.findViewById(R.id.tv_camera_ip);
+                convertView.setTag(holder);
             } else {
-                holder = (ViewHolder) slideView.getTag();
+                holder = (ViewHolder) convertView.getTag();
             }
-            c.slideView = slideView;
-            c.slideView.shrink();
-
+            
             holder.name.setText(c.name);
             TextPaint tp = holder.name.getPaint();
             tp.setFakeBoldText(true);
-            //holder.name.setOnClickListener(CameraList.this);
-            //holder.name.setTag(position);
             holder.ip.setText(c.ip);
             
-            //holder.ip.setOnClickListener(CameraList.this);
-            //holder.ip.setTag(position);
-            holder.deleteHolder.setOnClickListener(CameraList.this);
-            holder.deleteHolder.setTag(position);
-            //holder.icon.setOnClickListener(CameraList.this);
-            //holder.icon.setTag(position);
-
-            return slideView;
+            return convertView;
 	    }
 	}
 	
     public static class ViewHolder {
 	    public TextView name,ip;
 	    public int channel;
-	    //public ImageView icon;
-	    public ViewGroup deleteHolder;
-	    ViewHolder(View view) {
-	    	name = (TextView) view.findViewById(R.id.tv_camera_name);
-            ip = (TextView) view.findViewById(R.id.tv_camera_ip);
-            deleteHolder = (ViewGroup)view.findViewById(R.id.holder);
-            //icon = (ImageView)view.findViewById(R.id.iv_icon);
-	    }
-	}
+	}*/
 	
 	@Override  
     protected void onDestroy() {  
@@ -162,7 +201,8 @@ public class CameraList extends Activity implements OnItemClickListener, OnClick
 		// TODO Auto-generated method stub
 		super.onRestart();
 		System.out.println("onRestart");
-		cameras= mDBManager.query();
+		cameras = mDBManager.query();
+		adapter.setList(cameras);
 		adapter.notifyDataSetChanged();
 	}
 
@@ -170,6 +210,10 @@ public class CameraList extends Activity implements OnItemClickListener, OnClick
 	public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
 		// TODO Auto-generated method stub
 		System.out.println("onItemClick");
+		System.out.println("isMove:"+isMove);
+		if(isMove){
+			return;
+		}
 		if(HWCameraActivity.cameraLogin(cameras.get((int)arg3).ip) != -1){
 			Intent intent = new Intent(CameraList.this,HWCameraActivity.class);
 			//intent.putExtra("camera", cameras.get((int)arg3).ip);
@@ -189,37 +233,4 @@ public class CameraList extends Activity implements OnItemClickListener, OnClick
 	    .setPositiveButton("确定", null)   
 	    .show();  
 	}
-
-    @Override
-    public void onSlide(View view, int status) {
-        if (mLastSlideViewWithStatusOn != null && mLastSlideViewWithStatusOn != view) {
-            mLastSlideViewWithStatusOn.shrink();
-        }
-
-        if (status == SLIDE_STATUS_ON) {
-            mLastSlideViewWithStatusOn = (SlideView) view;
-        }
-    }
-
-    @Override
-    public void onClick(View v) {
-        if (v.getId() == R.id.holder) {
-            Log.e("", "onClick v=" + v);
-            int position = Integer.valueOf(v.getTag().toString());
-            Camera c = cameras.get(position);
-            cameras.remove(position);
-            mDBManager.deleteOldCamera(c.name);
-            adapter.notifyDataSetChanged();
-        }/*else if (v.getId() == R.id.tv_camera_name || v.getId() == R.id.tv_camera_ip || v.getId() == R.id.iv_icon) {
-            Log.e("", "onClick v=" + v);
-            int position = Integer.valueOf(v.getTag().toString());
-            if(HWCameraActivity.cameraLogin(cameras.get(position).ip) != -1){
-    			Intent intent = new Intent(CameraList.this,HWCameraActivity.class);
-    			//intent.putExtra("camera", cameras.get((int)arg3).ip);
-    			startActivity(intent);
-    		}else{
-    			postAlerDialog(CameraList.this,"ip不存在");
-    		}
-        }*/
-    }  
 }

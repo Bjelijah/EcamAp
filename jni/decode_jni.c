@@ -148,6 +148,15 @@ static PLAY_HANDLE init_play_handle(int is_playback ,SYSTEMTIME beg,SYSTEMTIME e
 		//media_head.adec_code = 0xa;
 		__android_log_print(ANDROID_LOG_INFO, "jni", "hwnet_get_file_stream_head ret:%d",b);
 	}
+	media_head.media_fourcc = 0x48574D49;			// "HKMI": 0x484B4D49 Hikvision Media Information,"HWMI":0x48574D49
+	media_head.dvr_version = 65000;
+	media_head.vdec_code = VDEC_H264;
+	media_head.adec_code = ADEC_G711U;
+
+	media_head.au_bits = 16; // 8,16...
+	media_head.au_sample = 8;//Kbps 8,16,64
+	media_head.au_channel = 1;//1,2
+
 	PLAY_HANDLE  ph = hwplay_open_stream((char*)&media_head,sizeof(media_head),1024*1024,is_playback,area);
 	hwplay_open_sound(ph);
 	hwplay_set_max_framenum_in_buf(ph,is_playback?25:5);
