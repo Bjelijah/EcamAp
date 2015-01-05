@@ -3,6 +3,10 @@ package com.howell.ecameraap;
 import java.io.Serializable;
 
 public class ReplayFile implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	public short begYear;
 	public short begMonth;
 	public short begDay;

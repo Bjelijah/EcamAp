@@ -21,7 +21,7 @@ import com.howell.db.Camera;
 import com.howell.db.DBManager;
 
 public class CameraList extends Activity implements OnItemClickListener{
-	private ImageButton addCam,back;
+	private ImageButton addCam/*,back*/;
 	private ListView cameraList;
 	private ArrayList<Camera> cameras;
     private DBManager mDBManager; 
@@ -43,7 +43,7 @@ public class CameraList extends Activity implements OnItemClickListener{
 				startActivity(intent);
 			}
 		});
-		back = (ImageButton)findViewById(R.id.ib_back);
+/*		back = (ImageButton)findViewById(R.id.ib_back);
 		back.setOnClickListener(new OnClickListener() {
 			
 			@Override
@@ -51,7 +51,7 @@ public class CameraList extends Activity implements OnItemClickListener{
 				// TODO Auto-generated method stub
 				finish();
 			}
-		});
+		});*/
 		
 		mDBManager = new DBManager(CameraList.this);
 		cameras= mDBManager.query();
@@ -72,59 +72,59 @@ public class CameraList extends Activity implements OnItemClickListener{
 			
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
-			// TODO Auto-generated method stub
-			if (adapter.getSelectedView() == null) {
-				return false;
-			}
-			
-			switch (event.getAction()) {
-				case MotionEvent.ACTION_DOWN:
-					// 按下事件，获取用户要操作的项，和事件坐标
-					System.out.println("action down:"+isMove);
-					selectedView = adapter.getSelectedView();
-					oldX = event.getX();
-					oldY = event.getY();
-					
-					break;
-				case MotionEvent.ACTION_MOVE:
-					/*
-					* 移动事件，若y方向移动距离大于x方向移动距离，
-					* 则认为用户是想上下滚动列表。
-					* 否则，用户是想滑动列表的某一项。
-					*/
-					isMove = true;
-					System.out.println("action move:"+isMove);
-					
-					float distanceX=event.getX()-oldX;
-					float distanceY=event.getY()-oldY;
-					if(Math.abs(distanceX)>Math.abs(distanceY)){
-						selectedView.setX(selectedView.getX()+distanceX);
-						selectedView.setAlpha(Math.max(0.1f,1-Math.abs(selectedView.getX()/200)));
-					}
-					oldX=event.getX();
-					oldY=event.getY();
-					break;
-				case MotionEvent.ACTION_UP:
-					/*
-					* 弹起事件，根据x方向移动距离的大小，
-					* 判断要进行什么操作
-					*/
-					
-					if(Math.abs(selectedView.getX())>200){
-					//移动距离大于200px，则删除该项
-					//（直接删除会有点突兀，可增加确认对话框或删除动画等。）
-						adapter.delete();
-						//isMove = false;
-					}else{
-					//否则，将其还原
-						adapter.cancel();
-						isMove = false;
-					}
-					System.out.println("action up:"+isMove);
-					break;
-				
+				// TODO Auto-generated method stub
+				if (adapter.getSelectedView() == null) {
+					return false;
 				}
-				return false;
+				
+				switch (event.getAction()) {
+					case MotionEvent.ACTION_DOWN:
+						// 按下事件，获取用户要操作的项，和事件坐标
+						System.out.println("action down:"+isMove);
+						selectedView = adapter.getSelectedView();
+						oldX = event.getX();
+						oldY = event.getY();
+						
+						break;
+					case MotionEvent.ACTION_MOVE:
+						/*
+						* 移动事件，若y方向移动距离大于x方向移动距离，
+						* 则认为用户是想上下滚动列表。
+						* 否则，用户是想滑动列表的某一项。
+						*/
+						isMove = true;
+						System.out.println("action move:"+isMove);
+						
+						float distanceX=event.getX()-oldX;
+						float distanceY=event.getY()-oldY;
+						if(Math.abs(distanceX)>Math.abs(distanceY)){
+							selectedView.setX(selectedView.getX()+distanceX);
+							selectedView.setAlpha(Math.max(0.1f,1-Math.abs(selectedView.getX()/200)));
+						}
+						oldX=event.getX();
+						oldY=event.getY();
+						break;
+					case MotionEvent.ACTION_UP:
+						/*
+						* 弹起事件，根据x方向移动距离的大小，
+						* 判断要进行什么操作
+						*/
+						
+						if(Math.abs(selectedView.getX())>200){
+						//移动距离大于200px，则删除该项
+						//（直接删除会有点突兀，可增加确认对话框或删除动画等。）
+							adapter.delete();
+							//isMove = false;
+						}else{
+						//否则，将其还原
+							adapter.cancel();
+							isMove = false;
+						}
+						System.out.println("action up:"+isMove);
+						break;
+					
+					}
+					return false;
 				}
 			});
 	}
