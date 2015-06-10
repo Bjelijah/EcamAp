@@ -15,6 +15,7 @@ import android.media.AudioTrack;
 import android.opengl.GLSurfaceView;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -51,6 +52,7 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 	private byte[] mAudioData;
 	private int mAudioDataLength;
 	private int isPlayBack;
+	private int slot;
 	private SeekBar replaySeekBar;
 	private ImageButton vedioList,circle,quality,sound,catch_picture;
 	private TextView streamLen;
@@ -75,6 +77,8 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 	private long firstFrameTime,endFrameTime;
 	private boolean isSufaceControlShown;
 	
+	private final static String photoPath = Environment.getExternalStorageDirectory().getAbsolutePath()+"/eCamera_Ap";
+	
 	private GestureDetector mGestureDetector;
 	
 	static {
@@ -82,6 +86,7 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
         System.loadLibrary("player_jni");
     }
 	
+	@SuppressWarnings("deprecation")
 	public HWCameraActivity() {
 		// TODO Auto-generated constructor stub
         mGestureDetector = new GestureDetector(this);   
@@ -99,9 +104,9 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 	    maxVolume = audiomanage.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
 	    int ret;
 	    if(isPlayBack == 0){
-	    	ret = display(isPlayBack,(short)0,(short)0,(short)0,(short)0,(short)0,(short)0,(short)0,(short)0,(short)0,(short)0,(short)0,(short)0);
+	    	ret = display(slot,isPlayBack,(short)0,(short)0,(short)0,(short)0,(short)0,(short)0,(short)0,(short)0,(short)0,(short)0,(short)0,(short)0);
 	    }else{
-	    	ret = display(isPlayBack, replayfile.begYear, replayfile.begMonth, replayfile.begDay, replayfile.begHour, replayfile.begMinute, replayfile.begSecond
+	    	ret = display(slot,isPlayBack, replayfile.begYear, replayfile.begMonth, replayfile.begDay, replayfile.begHour, replayfile.begMinute, replayfile.begSecond
 	    			, replayfile.endYear, replayfile.endMonth, replayfile.endDay, replayfile.endHour, replayfile.endMinute, replayfile.endSecond);
 	    }
 	    if(ret < 0){//playhandle < 0
@@ -110,7 +115,9 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
         handler.sendEmptyMessageDelayed(SHOWSTREAMLEN,5000);
     }
     
-    private void init(){
+    @SuppressLint("SimpleDateFormat")
+	@SuppressWarnings("deprecation")
+	private void init(){
     	mGlView = (GLSurfaceView)findViewById(R.id.glsurface_view);
  		mGlView.setEGLContextClientVersion(2);
  		mGlView.setRenderer(new YV12Renderer(this,mGlView));
@@ -135,6 +142,7 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
  		isSufaceControlShown = true;
  		
  		isPlayBack = intent.getIntExtra("playback", 0);
+ 		slot = intent.getIntExtra("slot", slot);
  		replaySeekBar = (SeekBar)findViewById(R.id.replaySeekBar);
  		//pause = (ImageButton)findViewById(R.id.ib_pause);
  		vedioList = (ImageButton)findViewById(R.id.vedio_list);
@@ -236,14 +244,15 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 					Utils.postToast(getApplicationContext(), getResources().getString(R.string.no_sdcard),2000);
 					return;
 				}
-				File destDir = new File("/sdcard/eCamera_Ap");
+				File destDir = new File(photoPath);
 				if (!destDir.exists()) {
 					System.out.println("File not exists");
 					destDir.mkdirs();
 				}
-				String path = "/sdcard/eCamera_Ap/"+Utils.getFileName()+".jpg";
-				catchPicture(path);
-				Utils.postToast(getApplicationContext(), getResources().getString(R.string.save_picture),2000);
+				String path = photoPath+"/"+Utils.getFileName()+".jpg";
+				if( catchPicture(path) == 1){//抓图成功
+					Utils.postToast(getApplicationContext(), getResources().getString(R.string.save_picture),2000);
+				}
 				break;
 			case R.id.camera_circle:
 				setFlip();
@@ -254,7 +263,6 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 					
 				}else {
 					audioPlay();
-//					mSound.setImageDrawable(getResources().getDrawable(R.drawable.sound));
 				}
 				break;
 			case R.id.vedio_list:
@@ -264,17 +272,6 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 				QuitToVedioListTask task = new QuitToVedioListTask();
 				task.execute();
 				break;
-//			case R.id.ib_pause:
-//				if(!bPause){
-//					pause.setImageResource(R.drawable.play);
-//					playbackPause(bPause);
-//					bPause = true;
-//				}else{
-//					pause.setImageResource(R.drawable.pause);
-//					playbackPause(!bPause);
-//					bPause = false;
-//				}
-//				break;
 			default:
 				break;
 			}
@@ -288,8 +285,6 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 			// TODO Auto-generated method stub
 			System.out.println("call doInBackground");
 	        try{
-	        	//HWCameraActivity.stopRecord();
-//	        	finishPlay = true;
 	        	audioStop();
 	        	fileListHandle = getReplayListCount();
 	        	handler.setHandlerWork(false);
@@ -326,11 +321,11 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 				if(!handlerWork){
 					return;
 				}
-				int nowStream = (getStreamLen()/1024*8)/5;
+				int nowStream = (getStreamLen()/1024*8)/3;
 				Log.e("SHOWSTREAMLEN", nowStream - oldStream+"");
 				streamLen.setText(nowStream - oldStream + " Kibt/s");
 				oldStream = nowStream;
-				sendEmptyMessageDelayed(SHOWSTREAMLEN, 5000);
+				sendEmptyMessageDelayed(SHOWSTREAMLEN, 3000);
 				break;
 			case SEEKBARCHANGE:
 				if(!handlerWork || changeReplayPosition){
@@ -342,13 +337,7 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 				}else if(YV12Renderer.time != 0 && !isFirstFrame){
 					
 					endFrameTime = YV12Renderer.time;
-//					System.out.println("progress firstFrameTime:"+firstFrameTime+" endFrameTime:"+endFrameTime);
-//					if(!handlerWork){
-//						mPlayerHandler.sendEmptyMessage(HIDEPROGRESSBAR);
-//						progressHasStop = true;
-//					}
 					replaySeekBar.setProgress((int)(endFrameTime - firstFrameTime));
-//					System.out.println("progress:"+(int)(endFrameTime - firstFrameTime));
 				}
 				handler.sendEmptyMessageDelayed(SEEKBARCHANGE,100);
 				break;
@@ -364,14 +353,14 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 //		mAudioTrack.pause();
 		audiomanage.setStreamVolume(AudioManager.STREAM_MUSIC, 0 , 0);
 		isAudioOpen = false;
-		sound.setImageDrawable(getResources().getDrawable(R.drawable.no_sound));
+		sound.setImageDrawable(getResources().getDrawable(R.drawable.img_no_sound));
 	}
 	
 	private void audioPlay(){
 		//mAudioTrack.play();
 		audiomanage.setStreamVolume(AudioManager.STREAM_MUSIC, maxVolume/2 , 0);
 		isAudioOpen = true;
-		sound.setImageDrawable(getResources().getDrawable(R.drawable.sound));
+		sound.setImageDrawable(getResources().getDrawable(R.drawable.img_sound));
 	}
 	
     private boolean existSDCard() {  
@@ -386,7 +375,7 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
         return mPlayer;
     }
     
-    private native int display(int isPlayBack,short begYear,short begMonth,short begDay,short begHour
+    private native int display(int slot,int isPlayBack,short begYear,short begMonth,short begDay,short begHour
 	,short begMinute,short begSecond,short endYear,short endMonth,short endDay,short endHour,short endMinute
 	,short endSecond);
     public static native void quit();
@@ -426,8 +415,6 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 	}
 	
 	public static void audioStop(){
-		//mAudioTrack.flush();
-		//mAudioTrack.pause();
 		mAudioTrack.stop();
 	}
 	
@@ -485,32 +472,6 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 		super.onResume();
 	}
     
-	@Override
-	protected void onRestart() {
-		// TODO Auto-generated method stub
-		super.onRestart();
-		/*System.out.println("onRestart"+this.toString());
-		backCount = 0;
- 		mPlayer = this;
- 		//mPausing = false;
- 		isAudioOpen = true;
- 		fileListHandle = -2;
- 		isPlayBack = 0;
- 		replaySeekBar.setVisibility(View.GONE);
-	 	pause.setVisibility(View.GONE);
-	 	vedioList.setVisibility(View.VISIBLE);
-	 	System.out.println("ip:"+ip);
-	 	
-		audioInit();
-		cameraLogin(ip);
-		//audiomanage = (AudioManager)getSystemService(Context.AUDIO_SERVICE); 
-	    //maxVolume = audiomanage.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-	    display(isPlayBack,(short)0,(short)0,(short)0,(short)0,(short)0,(short)0,(short)0,(short)0,(short)0,(short)0,(short)0,(short)0);
-
-	    handler = new MyHandler();
-        handler.sendEmptyMessageDelayed(SHOWSTREAMLEN,5000);*/
-	}
-	
 	@Override
 	 public void onConfigurationChanged(Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);

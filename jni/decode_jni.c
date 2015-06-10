@@ -86,7 +86,7 @@ on_source_callback(PLAY_HANDLE handle,
 		   int au_bits,//��Ƶλ��,��Ƶ�����Ч
 		   long user)
 {
-  //__android_log_print(ANDROID_LOG_INFO, "JNI", "type:%d len:%d %lu\n",type,len,timestamp);
+  __android_log_print(ANDROID_LOG_INFO, "JNI", "type:%d len:%d %lu\n",type,len,timestamp);
 
   if (type == 0) {
     audio_play(buf,len,au_sample,au_channel,au_bits);
@@ -127,12 +127,12 @@ int login(const char* ip){
 	return 0;
 }
 
-static PLAY_HANDLE init_play_handle(int is_playback ,SYSTEMTIME beg,SYSTEMTIME end){
+static PLAY_HANDLE init_play_handle(int slot,int is_playback ,SYSTEMTIME beg,SYSTEMTIME end){
 	RECT area ;
 	HW_MEDIAINFO media_head;
 	memset(&media_head,0,sizeof(media_head));
 	if(!is_playback){//预览
-		res->live_stream_handle = hwnet_get_live_stream(res->user_handle,0,0,0,on_live_stream_fun,0);
+		res->live_stream_handle = hwnet_get_live_stream(res->user_handle,slot,1,0,on_live_stream_fun,0);
 		__android_log_print(ANDROID_LOG_INFO, "jni", "live_stream_handle: %d",res->live_stream_handle);
 		__android_log_print(ANDROID_LOG_INFO, "jni", "1");
 		//int media_head_len = 0;
@@ -142,7 +142,7 @@ static PLAY_HANDLE init_play_handle(int is_playback ,SYSTEMTIME beg,SYSTEMTIME e
 	}else{//回放
 		__android_log_print(ANDROID_LOG_INFO, "jni", "is_playback :%d",is_playback);
 		file_stream_t file_info;
-		res->file_stream_handle = hwnet_get_file_stream(res->user_handle,0,beg,end,on_file_stream_fun,0,&file_info);
+		res->file_stream_handle = hwnet_get_file_stream(res->user_handle,slot,beg,end,on_file_stream_fun,0,&file_info);
 		__android_log_print(ANDROID_LOG_INFO, "jni", "file_stream_handle: %d",res->file_stream_handle);
 		int b = hwnet_get_file_stream_head(res->file_stream_handle,(char*)&media_head,1024,&res->media_head_len);
 		//media_head.adec_code = 0xa;
@@ -194,15 +194,15 @@ JNIEXPORT int JNICALL Java_com_howell_ecameraap_HWCameraActivity_cameraLogin
 }
 
 JNIEXPORT int JNICALL Java_com_howell_ecameraap_HWCameraActivity_display
-(JNIEnv *env, jclass cls, jint is_playback,jshort begYear,jshort begMonth,jshort begDay,jshort begHour
+(JNIEnv *env, jclass cls,jint slot, jint is_playback,jshort begYear,jshort begMonth,jshort begDay,jshort begHour
 		,jshort begMinute,jshort begSecond,jshort endYear,jshort endMonth,jshort endDay,jshort endHour,jshort endMinute
 		,jshort endSecond){
-	__android_log_print(ANDROID_LOG_INFO, "!!!", "display");
+	__android_log_print(ANDROID_LOG_INFO, "!!!", "display slot:%d",slot);
 	res->is_playback = is_playback;
 	SYSTEMTIME beg;
 	SYSTEMTIME end;
 	if(is_playback == 0){
-		res->play_handle = init_play_handle(is_playback,beg,end);
+		res->play_handle = init_play_handle(slot,is_playback,beg,end);
 	}else{
 		beg.wYear = begYear;
 		beg.wMonth = begMonth;
@@ -219,7 +219,7 @@ JNIEXPORT int JNICALL Java_com_howell_ecameraap_HWCameraActivity_display
 		end.wSecond = endSecond;
 		__android_log_print(ANDROID_LOG_INFO, "decod_jni", "test :%d-%d-%d %d:%d:%d\n"
 					,beg.wYear, beg.wMonth,beg.wDay,beg.wHour,beg.wMinute,beg.wSecond);
-		res->play_handle = init_play_handle(is_playback,beg,end);
+		res->play_handle = init_play_handle(slot,is_playback,beg,end);
 	}
 	return res->play_handle;
 }
@@ -352,38 +352,46 @@ JNIEXPORT int JNICALL Java_com_howell_ecameraap_HWCameraActivity_getReplayListCo
 	 hour = timeinfo->tm_hour;
 	 min = timeinfo->tm_min;
 	 second = timeinfo->tm_sec;
-	 SYSTEMTIME beg;
-	 beg.wYear = year;
-	 beg.wMonth = month;
-	 beg.wDay = day;
-	 beg.wHour = hour;
-	 beg.wMinute = min;
-	 beg.wSecond = second;
 	 SYSTEMTIME end;
 	 end.wYear = year;
-	 if(month - 2 >= 1){
-		 end.wMonth = month - 2;
-	 }else if(month == 2){
-		 end.wYear = year - 1;
-		 end.wMonth = 12;
-	 }else if(month == 1){
-		 end.wYear = year - 1;
-		 end.wMonth = 11;
-	 }
-	 end.wDay = day ;
-	 if(end.wMonth == 2 && end.wDay > 28){
-		 end.wDay = 28;
-	 }
+	 end.wMonth = month;
+	 end.wDay = day;
 	 end.wHour = hour;
 	 end.wMinute = min;
 	 end.wSecond = second;
+	 __android_log_print(ANDROID_LOG_INFO, "jni", "end:%4d-%02d-%02d %02d:%02d:%02d\n"
+	 			,end.wYear, end.wMonth,
+	 			end.wDay,end.wHour,end.wMinute,end.wSecond);
+	 SYSTEMTIME beg;
+	 beg.wYear = year;
+	 if(month - 2 >= 1){
+		 beg.wMonth = month - 2;
+	 }else if(month == 2){
+		 beg.wYear = year - 1;
+		 beg.wMonth = 12;
+	 }else if(month == 1){
+		 beg.wYear = year - 1;
+		 beg.wMonth = 11;
+	 }
+	 beg.wDay = day ;
+	 if(end.wMonth == 2 && end.wDay > 28){
+		 beg.wDay = 28;
+	 }
+	 beg.wHour = hour;
+	 beg.wMinute = min;
+	 beg.wSecond = second;
+	 __android_log_print(ANDROID_LOG_INFO, "jni", "beg:%4d-%02d-%02d %02d:%02d:%02d\n"
+		 			,beg.wYear, beg.wMonth,
+		 			beg.wDay,beg.wHour,beg.wMinute,beg.wSecond);
 	__android_log_print(ANDROID_LOG_INFO, "jni", "%4d-%02d-%02d %02d:%02d:%02d\n"
 			,1900+timeinfo->tm_year, 1+timeinfo->tm_mon,
 			timeinfo->tm_mday,timeinfo->tm_hour,timeinfo->tm_min,timeinfo->tm_sec);
-	int file_list_handle = hwnet_get_file_list(res->user_handle,0,end,beg,0);
+	__android_log_print(ANDROID_LOG_INFO, "jni", "hwnet_get_file_list 1");
+	int file_list_handle = hwnet_get_file_list(res->user_handle,0,beg,end,0);
+	__android_log_print(ANDROID_LOG_INFO, "jni", "hwnet_get_file_list 2");
 	//int count;
 	int ret = hwnet_get_file_count(file_list_handle,&total_file_list_count);
-	__android_log_print(ANDROID_LOG_INFO, "jni", "count %d ret %d\n",total_file_list_count,ret);
+	__android_log_print(ANDROID_LOG_INFO, "jni", "file_list_handle %d,count %d ret %d\n",file_list_handle,total_file_list_count,ret);
 	return file_list_handle;
 }
 
@@ -446,19 +454,19 @@ JNIEXPORT jobjectArray JNICALL Java_com_howell_ecameraap_VedioList_getReplayList
 				,end.wYear, end.wMonth,end.wDay,end.wHour,end.wMinute,end.wSecond);
 			__android_log_print(ANDROID_LOG_INFO, "jni", "new onject");
 			obj = (*env)->NewObject(env,clsMX, consID);
-			(*env)->SetIntField(env,obj, begYear, beg.wYear);
-			(*env)->SetIntField(env,obj, begMonth, beg.wMonth);
-			(*env)->SetIntField(env,obj, begDay, beg.wDay);
-			(*env)->SetIntField(env,obj, begHour, beg.wHour);
-			(*env)->SetIntField(env,obj, begMinute, beg.wMinute);
-			(*env)->SetIntField(env,obj, begSecond, beg.wSecond);
+			(*env)->SetShortField(env,obj, begYear, beg.wYear);
+			(*env)->SetShortField(env,obj, begMonth, beg.wMonth);
+			(*env)->SetShortField(env,obj, begDay, beg.wDay);
+			(*env)->SetShortField(env,obj, begHour, beg.wHour);
+			(*env)->SetShortField(env,obj, begMinute, beg.wMinute);
+			(*env)->SetShortField(env,obj, begSecond, beg.wSecond);
 
-			(*env)->SetIntField(env,obj, endYear, end.wYear);
-			(*env)->SetIntField(env,obj, endMonth, end.wMonth);
-			(*env)->SetIntField(env,obj, endDay, end.wDay);
-			(*env)->SetIntField(env,obj, endHour, end.wHour);
-			(*env)->SetIntField(env,obj, endMinute, end.wMinute);
-			(*env)->SetIntField(env,obj, endSecond, end.wSecond);
+			(*env)->SetShortField(env,obj, endYear, end.wYear);
+			(*env)->SetShortField(env,obj, endMonth, end.wMonth);
+			(*env)->SetShortField(env,obj, endDay, end.wDay);
+			(*env)->SetShortField(env,obj, endHour, end.wHour);
+			(*env)->SetShortField(env,obj, endMinute, end.wMinute);
+			(*env)->SetShortField(env,obj, endSecond, end.wSecond);
 			(*env)->SetObjectArrayElement(env,MXArray, j, obj);
 			j++;
 	}

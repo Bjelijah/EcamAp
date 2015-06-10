@@ -219,11 +219,11 @@ public class CameraList extends Activity implements OnItemClickListener{
 			//intent.putExtra("camera", cameras.get((int)arg3).ip);
 			intent.putExtra("playback", 0);//预览
 			intent.putExtra("ip", cameras.get((int)arg3).ip);
+			intent.putExtra("slot", cameras.get((int)arg3).channel);
 			startActivity(intent);
 		}else{
 			postAlerDialog(CameraList.this,"连接失败,请确认ip是否正确！");
 		}
-		
 	}
 	
 	public void postAlerDialog(Context context,String message){
