@@ -1,6 +1,7 @@
 #ifndef _protocol_type_include_h
 #define _protocol_type_include_h
 
+#include <stdint.h>
 #include "hw_config.h"
 
 #define	MAX_NAME_LEN			32
@@ -110,7 +111,19 @@ typedef struct
 	SYSTEMTIME beg;
 	SYSTEMTIME end;
 	int		format;	
+
+    int video_dec;
+    int audio_dec;
+
+    //如果ext_flag为1,media_info必须有效
+    int ext_flag;
+    char media_info[40];
+
+    int reserve[19];
+
+#if 0
 	int		reserved[32];
+#endif
 }rec_file_format_t;
 
 typedef struct 
@@ -209,22 +222,26 @@ typedef struct
 
 typedef enum 
 {
-	IPCAM_ESHUTTER_8L_SEC=0, /* 8 sec */
-	IPCAM_ESHUTTER_4L_SEC=1,	/* 4 sec */
-	IPCAM_ESHUTTER_10_SEC=2, /* 1/10 sec */
-	IPCAM_ESHUTTER_12P5_SEC=3, /* 1/12.5 sec */
-	IPCAM_ESHUTTER_15_SEC=4,
-	IPCAM_ESHUTTER_20_SEC=5,
-	IPCAM_ESHUTTER_25_SEC=6,
-	IPCAM_ESHUTTER_30_SEC=7,
-	IPCAM_ESHUTTER_50_SEC=8,
-	IPCAM_ESHUTTER_60_SEC=9,
-	IPCAM_ESHUTTER_100_SEC=10,
-	IPCAM_ESHUTTER_120_SEC=11,
-	IPCAM_ESHUTTER_240_SEC=12,
-	IPCAM_ESHUTTER_480_SEC=13,
-	IPCAM_ESHUTTER_960_SEC=14,
-	IPCAM_ESHUTTER_1024_SEC=15,
+	IPCAM_ESHUTTER_1_SEC=0, /* 1/1 sec */
+	IPCAM_ESHUTTER_2_SEC,	/* 1/2 sec */
+	IPCAM_ESHUTTER_3_SEC,	/* 1/3 sec */
+	IPCAM_ESHUTTER_4_SEC,	/* 1/4 sec */
+	IPCAM_ESHUTTER_5_SEC,	/* 1/5 sec */
+	IPCAM_ESHUTTER_7_SEC,	/* 1/7 sec */
+	IPCAM_ESHUTTER_10_SEC,  /* 1/10 sec */
+	IPCAM_ESHUTTER_12P5_SEC, /* 1/12.5 sec */
+	IPCAM_ESHUTTER_15_SEC,
+	IPCAM_ESHUTTER_20_SEC,
+	IPCAM_ESHUTTER_25_SEC,
+	IPCAM_ESHUTTER_30_SEC,
+	IPCAM_ESHUTTER_50_SEC,
+	IPCAM_ESHUTTER_60_SEC,
+	IPCAM_ESHUTTER_100_SEC,
+	IPCAM_ESHUTTER_120_SEC,
+	IPCAM_ESHUTTER_240_SEC,
+	IPCAM_ESHUTTER_480_SEC,
+	IPCAM_ESHUTTER_960_SEC,
+	IPCAM_ESHUTTER_1024_SEC,
 	IPCAM_ESHUTTER_COUNT,
 }HW_IPCAM_ESHUTTER_E;
 typedef enum
@@ -479,6 +496,130 @@ typedef struct
     int value;//0-低电位 1-高电位
     char reserve[32];
 }net_gpio_ctrl_t;
+
+
+/*报警状态控制*/
+typedef struct
+{
+    int alarmin;//报警器号
+    int type;//0定时 1:手动布防 2:手动撤防
+    int reserve[32];
+}net_alarmin_ctrl_t;
+
+typedef struct
+{
+    int slot;
+    int stream;
+    int enable;
+    int left;
+    int top;
+    int color;
+    int outline;
+    int font_size;
+    int alpha;
+    int show_week;
+    int mode;
+    int reserve[4];
+}net_custom_osd_date_t;
+
+/*第三个osd*/
+typedef struct
+{
+    int slot;
+    int stream;
+    int enable;
+    int left;
+    int top;
+    int color;
+    int outline;
+    int font_size;
+    int alpha;
+    char name[512];
+    int reserve[4];
+}net_custom_osd_name_t;
+
+typedef struct
+{
+    int slot;
+    int stream;
+    int enable;
+    int x;
+    int y;
+    int font_size;
+    int color;
+    int alpha;
+    int outline;
+    int max_row;
+    int max_char_num;
+}net_dvo_custom_osd_set_t;
+
+typedef struct
+{
+    int slot;
+    int stream;
+    int row;
+    char str[256];
+}net_dvo_custom_osd_row_t;
+
+typedef struct
+{
+    int slot;
+    int type;
+    char usrname[128];
+    char password[128];
+    char ip[256];
+    char profile[128];
+    int nport;
+    int nchannel;
+    int use_tcp;
+}net_nvr_channel_set_t;
+
+//实时快门 增益信息
+typedef struct
+{
+    int slot;
+
+	uint32_t eshutter;//快门
+	uint32_t agc;//增益
+	uint32_t luma;//流明
+
+	uint32_t reserve[16];
+}net_live_ipc_ae_info_t;
+
+typedef struct {
+    uint8_t mode;   //0: day    1:night
+    uint8_t reserve[32];
+}net_black_white_status_t;
+
+typedef struct
+{
+    int id;
+    int attenuation;
+    int type;
+    int range_beg;
+    int range_end;
+    int reserve[4];
+}net_rfid_info_t;
+
+typedef struct
+{
+    // req
+    uint32_t page_size; // 每页多少条记录，0:无分页
+    uint32_t page_no; // 页号, from 0
+    //             // rsp
+    uint32_t total_size; // 总过多少条记录
+    uint32_t cur_size; // 当前页多少条记录
+    uint32_t page_count; // 总共多少页
+} Pagination;
+typedef struct {
+    uint32_t channel;
+    uint32_t stream;
+    SYSTEMTIME beg;
+    SYSTEMTIME end;
+    uint32_t type;/*0-normal 1-normal file 2-mot file*/
+    uint32_t order_by_time; // 0:升序 1:降序
+    Pagination pagination;
+}NetGetRecrodFile;
 
 #endif
 

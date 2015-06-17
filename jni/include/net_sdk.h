@@ -190,6 +190,8 @@ typedef struct
 }file_stream_t;
 FILE_STREAM_HANDLE hwnet_get_file_stream(USER_HANDLE handle,int slot,SYSTEMTIME beg,SYSTEMTIME end,file_stream_fun* fun,long userdata,file_stream_t* file_info);
 
+FILE_STREAM_HANDLE hwnet_get_file_stream_ex(USER_HANDLE handle,int slot,SYSTEMTIME beg,SYSTEMTIME end,int type,file_stream_fun* fun,long userdata,file_stream_t* file_info);
+
 
 /*关闭录像文件数据
  * handle:					hwnet_get_file_stream()返回的句柄
@@ -217,6 +219,18 @@ BOOL hwnet_get_file_stream_head(FILE_STREAM_HANDLE handle,char* buf,int len,int*
  * return:					-1:失败 >=0:成功
  * */
 FILE_LIST_HANDLE hwnet_get_file_list(USER_HANDLE handle,int slot,SYSTEMTIME beg,SYSTEMTIME end,int type);
+
+
+/*按页获取文件列表
+ * handle:					hwnet_login()返回的句柄
+ * slot:					服务器通道(从0开始)
+ * beg:						搜索开始时间
+ * end:						搜索结束时间
+ * type:					文件类型 0-所有文件 1-普通录像文件 2-运动录像文件
+ * order_by_time:           0:升序  1:降序
+ * page_info:               请参照Pagination结构 
+ */
+FILE_LIST_HANDLE hwnet_get_file_list_by_page(USER_HANDLE handle,int slot,int stream,SYSTEMTIME beg,SYSTEMTIME end,int type,int order_by_time,Pagination* page_info);
 
 
 /*获取文件列表个数
@@ -994,6 +1008,78 @@ BOOL hwnet_get_gpio(USER_HANDLE handle,int gpio,int* value);
  * return:                  1:成功 0:失败
  */
 BOOL hwnet_set_gpio(USER_HANDLE handle,int gpio,int value);
+
+
+/*
+ * 获取报警状态
+ * alarmin:                 alarm 号
+ * value:                   0:定时 1:手动布防 2:手动撤防
+ * return:                  1:成功 0:失败
+ */
+BOOL hwnet_get_alarm_guard(USER_HANDLE handle,int alarmin,int* value);
+
+
+/*
+ * 设置报警状态
+ * alarmin:                 alarm 号
+ * value:                   0:定时 1:手动布防 2:手动撤防
+ * return:                  1:成功 0:失败
+ */
+BOOL hwnet_set_alarm_guard(USER_HANDLE handle,int alarmin,int value);
+
+
+/*
+ * 获取自定义osd
+ * return:                  1:成功 0:失败
+ */
+BOOL hwnet_get_custom_osd(USER_HANDLE handle,net_custom_osd_name_t* custom_osd);
+
+/*
+ * 设置自定义osd
+ * return:                  1:成功 0:失败
+ */
+BOOL hwnet_set_custom_osd(USER_HANDLE handle,net_custom_osd_name_t* custom_osd);
+
+
+/**
+ * dvo pos机接口
+ */
+BOOL hwnet_dvo_get_osd_set(USER_HANDLE handle,net_dvo_custom_osd_set_t* dvo_osd_set);
+BOOL hwnet_dvo_set_osd_set(USER_HANDLE handle,net_dvo_custom_osd_set_t* dvo_osd_set);
+BOOL hwnet_dvo_get_osd_row(USER_HANDLE handle,net_dvo_custom_osd_row_t* dvo_osd_row);
+BOOL hwnet_dvo_set_osd_row(USER_HANDLE handle,net_dvo_custom_osd_row_t* dvo_osd_row);
+
+
+/**
+ *获取nvr通道(扩展)
+ */
+BOOL hwnet_nvr_get_channel_set(USER_HANDLE handle,net_nvr_channel_set_t* channel_set);
+
+/**
+ * 获取/设置ipc slow shutter等参数
+ */
+BOOL hwnet_ipc_get_misc(USER_HANDLE handle,net_ipcam_misc_t* ipcam_misc);
+BOOL hwnet_ipc_set_misc(USER_HANDLE handle,net_ipcam_misc_t* ipcam_misc);
+
+/**
+ * 获取ipc 实时参数
+ */
+BOOL hwnet_ipc_get_live_ae_info(USER_HANDLE handle,net_live_ipc_ae_info_t* ae_info);
+BOOL hwnet_ipc_set_live_ae_info(USER_HANDLE handle,net_live_ipc_ae_info_t* ae_info);
+
+
+/**
+ * 获取实时黑白状态
+ */
+BOOL hwnet_ipc_get_black_white_status(USER_HANDLE handle,int slot,net_black_white_status_t* bw_status);
+BOOL hwnet_ipc_manual_black_white_status(USER_HANDLE handle,int slot,net_black_white_status_t* bw_status);
+
+
+/**
+ * 获取RFID
+ */
+BOOL hwnet_ipc_get_rfid_info(USER_HANDLE handle,net_rfid_info_t* rfid);
+BOOL hwnet_ipc_set_rfid_info(USER_HANDLE handle,net_rfid_info_t* rfid);
 
 
 /*

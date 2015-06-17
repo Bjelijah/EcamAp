@@ -19,6 +19,32 @@ public class ReplayFile implements Serializable{
 	public short endHour;
 	public short endMinute;
 	public short endSecond;
+	
+	
+	public ReplayFile() {
+		super();
+	}
+
+	public ReplayFile(short begYear, short begMonth, short begDay,
+			short begHour, short begMinute, short begSecond, short endYear,
+			short endMonth, short endDay, short endHour, short endMinute,
+			short endSecond) {
+		super();
+		this.begYear = begYear;
+		this.begMonth = begMonth;
+		this.begDay = begDay;
+		this.begHour = begHour;
+		this.begMinute = begMinute;
+		this.begSecond = begSecond;
+		this.endYear = endYear;
+		this.endMonth = endMonth;
+		this.endDay = endDay;
+		this.endHour = endHour;
+		this.endMinute = endMinute;
+		this.endSecond = endSecond;
+	}
+
+
 	@Override
 	public String toString() {
 		return "ReplayFile [begYear=" + begYear + ", begMonth=" + begMonth

@@ -14,6 +14,14 @@
             android:background="#00000000"
             android:src="@drawable/back_btn_selector"
             android:layout_gravity="left|center" />
+        <ImageButton
+            android:id="@+id/ib_vediolist_search"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingRight="8dp"
+            android:background="#00000000"
+            android:src="@drawable/search_date_btn_selector"
+            android:layout_gravity="right|center" />
     </FrameLayout>
 
     <com.howell.ecameraap.MyListViewWithFoot

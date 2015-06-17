@@ -78,7 +78,7 @@
                     android:layout_height="wrap_content"
                     android:background="#00000000"
                     android:layout_weight="1"
-                    android:src="@drawable/camera_circle" />
+                    android:src="@drawable/img_roll" />
                 
                 <ImageButton
                     android:id="@+id/quality"
@@ -86,7 +86,7 @@
                     android:layout_height="wrap_content"
                     android:background="#00000000"
                     android:layout_weight="1"
-                    android:src="@drawable/gaoqing" />
+                    android:src="@drawable/img_hd" />
 
                 <ImageButton
                     android:id="@+id/vedio_list"
@@ -111,6 +111,15 @@
                     android:background="#00000000"
                     android:layout_weight="1"
                     android:src="@drawable/img_sound" />
+                
+                <ImageButton
+                    android:id="@+id/download"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="#00000000"
+                    android:visibility="gone"
+                    android:layout_weight="1"
+                    android:src="@drawable/img_download" />
 
             </LinearLayout>
 

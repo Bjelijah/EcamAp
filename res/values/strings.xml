@@ -20,4 +20,6 @@
 	<string name="refreshing">Refreshing</string>
 	<string name="last_update">Last update</string>
 	<string name="load_data">Now loading</string>
+	<string name="camera_list">Camera List</string>
+	<string name="download_list">Download List</string>
 </resources>

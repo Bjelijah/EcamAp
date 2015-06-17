@@ -19,4 +19,6 @@
 	<string name="refreshing">正在刷新</string>
 	<string name="last_update">上次更新</string>
 	<string name="load_data">正在加载数据</string>
+	<string name="camera_list">摄像机</string>
+	<string name="download_list">下载</string>
 </resources>

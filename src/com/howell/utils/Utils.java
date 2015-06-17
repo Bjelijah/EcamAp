@@ -4,11 +4,13 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import com.example.com.howell.ecameraap.R;
 import com.howell.ecameraap.HWCameraActivity;
 import com.howell.ecameraap.VedioList;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.widget.Toast;
@@ -42,6 +44,15 @@ public class Utils {
         .setMessage(message)                 
         .setPositiveButton("确定", null)   
         .show();  
+	}
+	
+	public static Dialog postNewUIDialog(Context context){
+		final Dialog lDialog = new Dialog(context,android.R.style.Theme_Translucent_NoTitleBar_Fullscreen);
+//       lDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+		lDialog.setContentView(R.layout.wait_dialog);
+//       ((TextView) lDialog.findViewById(R.id.dialog_title)).setText(pTitle);
+		//lDialog.show();
+		return lDialog;
 	}
 	
 	public static void postFinishActivityAlerDialog(final Context context,String message){

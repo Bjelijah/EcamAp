@@ -1,10 +1,12 @@
 package com.howell.ecameraap;
 
-import com.example.com.howell.ecameraap.R;
+import java.io.File;
 
+import com.example.com.howell.ecameraap.R;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -18,6 +20,7 @@ public class Login extends Activity{
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.login);
+		createFile();
 		login = (Button)findViewById(R.id.btn_login);
 		username = (EditText)findViewById(R.id.et_user_name);
 		password = (EditText)findViewById(R.id.et_user_password);
@@ -36,6 +39,25 @@ public class Login extends Activity{
 			}
 		});
 	}
+	
+	private void createFile(){
+		if(!existSDCard()){
+			return;
+		}
+		File destDir = new File(Environment.getExternalStorageDirectory()+"/eCamera_AP");
+		if (!destDir.exists()) {
+			destDir.mkdirs();
+		}
+	}
+	
+	private boolean existSDCard() {  
+    	if (android.os.Environment.getExternalStorageState().equals(  
+    		android.os.Environment.MEDIA_MOUNTED)) {  
+        	return true;  
+        } else  
+        	return false;  
+    }  
+	
 	
 	@Override
 	protected void onStop() {

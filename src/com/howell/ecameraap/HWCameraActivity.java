@@ -6,6 +6,7 @@ import java.util.Date;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -37,6 +38,7 @@ import android.widget.TextView;
 
 import com.example.com.howell.ecameraap.R;
 import com.howell.play.YV12Renderer;
+import com.howell.utils.NetWorkUtils;
 import com.howell.utils.Utils;
 
 @SuppressLint("HandlerLeak")
@@ -54,7 +56,7 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 	private int isPlayBack;
 	private int slot;
 	private SeekBar replaySeekBar;
-	private ImageButton vedioList,circle,quality,sound,catch_picture;
+	private ImageButton vedioList,circle,quality,sound,catch_picture,download;
 	private TextView streamLen;
 	private LinearLayout surfaceControl;
 	
@@ -81,8 +83,12 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 	
 	private GestureDetector mGestureDetector;
 	
+	ProgressDialog downloadDialog;  
+	int dataLen;
+	
 	static {
 		System.loadLibrary("hwplay");
+		System.loadLibrary("ffmpeg");
         System.loadLibrary("player_jni");
     }
 	
@@ -108,6 +114,7 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 	    }else{
 	    	ret = display(slot,isPlayBack, replayfile.begYear, replayfile.begMonth, replayfile.begDay, replayfile.begHour, replayfile.begMinute, replayfile.begSecond
 	    			, replayfile.endYear, replayfile.endMonth, replayfile.endDay, replayfile.endHour, replayfile.endMinute, replayfile.endSecond);
+	    	Log.e("", "test display "+replayfile.toString());
 	    }
 	    if(ret < 0){//playhandle < 0
 	    	displayError();
@@ -140,6 +147,7 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
  		//fileListHandle = -2;
  		isFirstFrame = true;
  		isSufaceControlShown = true;
+ 		dataLen = 0;
  		
  		isPlayBack = intent.getIntExtra("playback", 0);
  		slot = intent.getIntExtra("slot", slot);
@@ -152,19 +160,24 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
  		catch_picture = (ImageButton)findViewById(R.id.catch_picture);
  		streamLen = (TextView)findViewById(R.id.tv_stream_len);
  		surfaceControl = (LinearLayout)findViewById(R.id.surface_icons);
+ 		download = (ImageButton)findViewById(R.id.download);
  		handler = new MyHandler();
  		
  		if(isPlayBack == 0){
  			replaySeekBar.setVisibility(View.GONE);
  	 		//pause.setVisibility(View.GONE);
  	 		vedioList.setVisibility(View.VISIBLE);
+ 	 		download.setVisibility(View.GONE);
+ 	 		circle.setVisibility(View.VISIBLE);
+ 	 		quality.setVisibility(View.VISIBLE);
  	 		ip = intent.getStringExtra("ip");
  		}else{
- 			System.out.println("11111111111");
  			replaySeekBar.setVisibility(View.VISIBLE);
  	 		//pause.setVisibility(View.VISIBLE);
  	 		vedioList.setVisibility(View.GONE);
- 	 		System.out.println("22222222222");
+ 	 		download.setVisibility(View.VISIBLE);
+ 	 		circle.setVisibility(View.GONE);
+ 	 		quality.setVisibility(View.GONE);
  	 		replayfile = (ReplayFile) intent.getSerializableExtra("replayfile");
  	 		final Date beg = new Date(replayfile.begYear - 1900, replayfile.begMonth - 1, replayfile.begDay, replayfile.begHour, replayfile.begMinute, replayfile.begSecond);
  			Date end = new Date(replayfile.endYear - 1900, replayfile.endMonth - 1, replayfile.endDay, replayfile.endHour, replayfile.endMinute, replayfile.endSecond);
@@ -218,6 +231,7 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
  		circle.setOnClickListener(listener);
  		sound.setOnClickListener(listener);
  		vedioList.setOnClickListener(listener);
+ 		download.setOnClickListener(listener);
  		//pause.setOnClickListener(listener);
     }
     
@@ -230,13 +244,13 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 			switch (view.getId()) {
 			case R.id.quality:
 				if(!b_quality){
-					quality.setImageDrawable(getResources().getDrawable(R.drawable.quality720p));
+					quality.setImageDrawable(getResources().getDrawable(R.drawable.img_hd));
 					b_quality = true;
-					changeTo720P();
-				}else{
-					quality.setImageDrawable(getResources().getDrawable(R.drawable.gaoqing));
-					b_quality = false;
 					changeToD1();
+				}else{
+					quality.setImageDrawable(getResources().getDrawable(R.drawable.img_sd));
+					b_quality = false;
+					changeTo720P();
 				}
 				break;
 			case R.id.catch_picture:
@@ -272,11 +286,102 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 				QuitToVedioListTask task = new QuitToVedioListTask();
 				task.execute();
 				break;
+				
+			case R.id.download:
+				createProgressDialog();
+				DownloadFreshTask downloadFreshTask = new DownloadFreshTask();
+				downloadFreshTask.execute();
+				break;
 			default:
 				break;
 			}
 		}
 	};
+	
+	private void createProgressDialog(){
+         // 创建ProgressDialog对象  
+		 downloadDialog = new ProgressDialog(HWCameraActivity.this);  
+
+		 downloadDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);  
+		 
+//		 downloadDialog.setProgressDrawable(getResources().getDrawable(R.drawable.progressbar_color));
+
+         // 设置ProgressDialog提示信息  
+//		 downloadDialog.setMessage("这是一个长形进度条对话框");  
+		 downloadDialog.setMessage("下载中");
+         // 设置ProgressDialog 进度条进度  
+//		 downloadDialog.setProgress(100);  
+
+         // 设置ProgressDialog 是否可以按退回键取消  
+		 downloadDialog.setCancelable(false);  
+
+         // 让ProgressDialog显示  
+		 downloadDialog.show();  
+	}
+	
+	public void refreshDataLen(int len){
+		dataLen += len;
+//		System.out.println("a-7 dataLen:"+dataLen);
+	}
+	
+	public class DownloadFreshTask extends AsyncTask<Void, Integer, Void> {
+		int totalLen;
+		private String removeMarks(String SSID){
+			if(SSID.startsWith("\"") && SSID.endsWith("\"")){
+				SSID = SSID.substring(1, SSID.length()-1);
+			}
+			return SSID;
+		}
+		@Override
+		protected Void doInBackground(Void... params) {
+			// TODO Auto-generated method stub
+			NetWorkUtils utils = new NetWorkUtils(HWCameraActivity.this);
+			String ssid = utils.getSSID();
+			System.out.println("ssid:"+ssid);
+			String fileName = Environment.getExternalStorageDirectory()+"/eCamera_AP/"+removeMarks(ssid)+"-"+replayfile.begYear+replayfile.begMonth+replayfile.begDay+replayfile.begHour+replayfile.begMinute+replayfile.begSecond+".mp4";
+			totalLen = downloadInit(fileName,slot, replayfile.begYear, replayfile.begMonth, replayfile.begDay, replayfile.begHour, replayfile.begMinute, replayfile.begSecond
+	    			, replayfile.endYear, replayfile.endMonth, replayfile.endDay, replayfile.endHour, replayfile.endMinute, replayfile.endSecond);
+			downloadDialog.setMax(totalLen);
+			System.out.println("totalLen:"+totalLen);
+			publishProgress(0);//将会调用onProgressUpdate(Integer... progress)方法  
+			if(totalLen <= 0){
+				return null;
+			}else{
+				while(dataLen < totalLen){
+					try {
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					System.out.println("dataLen:"+dataLen+" ,totalLen:"+totalLen);
+					publishProgress(dataLen);
+				}
+			}
+			
+	        return null;
+		}
+		
+		@Override
+		protected void onProgressUpdate(Integer... progress) {//在调用publishProgress之后被调用，在ui线程执行  
+			//System.out.println("progress:"+progress[0]);
+			downloadDialog.setProgress(progress[0]);//更新进度条的进度  
+			downloadDialog.setMessage("下载中");
+			//System.out.println("finish set progress");
+         }  
+		
+		@Override
+		protected void onPostExecute(Void result) {
+			// TODO Auto-generated method stub
+			super.onPostExecute(result);
+			if(totalLen > 0){
+				downloadDestory();
+				Utils.postToast(HWCameraActivity.this, "录像文件已下载到/eCamera_AP目录下",1000);
+			}
+			downloadDialog.dismiss();
+		}
+
+	}
 	
 	public class QuitToVedioListTask extends AsyncTask<Void, Integer, Void> {
 
@@ -286,7 +391,7 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 			System.out.println("call doInBackground");
 	        try{
 	        	audioStop();
-	        	fileListHandle = getReplayListCount();
+	        	//fileListHandle = getReplayListCount();
 	        	handler.setHandlerWork(false);
 		        quit();
 		        audioRelease();
@@ -341,7 +446,6 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 				}
 				handler.sendEmptyMessageDelayed(SEEKBARCHANGE,100);
 				break;
-
 			default:
 				break;
 			}
@@ -375,6 +479,10 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
         return mPlayer;
     }
     
+    private native int downloadInit(String fileName,int slot,short begYear,short begMonth,short begDay,short begHour
+    		,short begMinute,short begSecond,short endYear,short endMonth,short endDay,short endHour,short endMinute
+    		,short endSecond);
+    private native void downloadDestory();
     private native int display(int slot,int isPlayBack,short begYear,short begMonth,short begDay,short begHour
 	,short begMinute,short begSecond,short endYear,short endMonth,short endDay,short endHour,short endMinute
 	,short endSecond);
@@ -459,7 +567,7 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 
 	@Override
 	protected void onDestroy() {
-		Log.e("", "onDestroy");
+		//Log.e("", "onDestroy");
 		super.onDestroy();
 		System.runFinalization();
 	}
