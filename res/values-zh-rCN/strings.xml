@@ -21,4 +21,12 @@
 	<string name="load_data">正在加载数据</string>
 	<string name="camera_list">摄像机</string>
 	<string name="download_list">下载</string>
+	<string name="login_fail">连接失败,请确认ip是否正确！</string>
+	<string name="input_name">请输入设备名</string>
+	<string name="input_ip">请输入设备ip</string>
+	<string name="input_channel">请输入通道号</string>
+	<string name="delete">删除</string>
+	<string name="wether_delete">是否删除此项？</string>
+	<string name="zoom_tele">镜头拉远</string>
+	<string name="zoom_wide">镜头拉近</string>
 </resources>

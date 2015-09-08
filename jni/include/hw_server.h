@@ -55,11 +55,13 @@ public:
 
 	net_live_stream* get_live_stream(int slot,bool is_sub = false,int mode = TCP_MODE);
 
-	net_file_stream* get_file_stream(int slot,SYSTEMTIME beg,SYSTEMTIME end);
+	net_file_stream* get_file_stream(int slot,int stream,SYSTEMTIME beg,SYSTEMTIME end,int type,int is_extend,int time_type);
 
 	hw_files* get_file_list(int slot,SYSTEMTIME beg,SYSTEMTIME end,int file_type);
 
 	hw_files* get_smart_file_list(int slot,SYSTEMTIME beg,SYSTEMTIME end,RECT search_rt);
+
+	hw_files* get_file_list_by_page(int slot,int stream,SYSTEMTIME beg,SYSTEMTIME end,int order_by_time,Pagination* page_info,int type,int time_type);
 
 	bool get_stream_head(int slot,int is_sub,HW_MEDIAINFO* media);	
 
@@ -171,6 +173,10 @@ public:
     bool enable_flip(int slot,int enable);
     bool get_flip(int slot,int* is_flip);
 
+    //ipc slow shutter
+    bool get_ipc_misc(net_ipcam_misc_t* ipcam_misc);
+    bool set_ipc_misc(net_ipcam_misc_t* ipcam_misc);
+
     //blackwhite
     bool get_blackwhite(net_blackwhite_t* bw);
     bool set_blackwhite(net_blackwhite_t* bw);
@@ -179,13 +185,44 @@ public:
     bool get_gpio(net_gpio_ctrl_t* gp);
     bool set_gpio(net_gpio_ctrl_t* gp);
 
+    //alarmin
+    bool get_alarmin_guard(net_alarmin_ctrl_t* alarm_guard);
+    bool set_alarmin_guard(net_alarmin_ctrl_t* alarm_guard);
+
+    //custom osd
+    bool get_custom_osd(net_custom_osd_name_t* custom_osd);
+    bool set_custom_osd(net_custom_osd_name_t* custom_osd);
+
+    //dvo pos osd
+    bool dvo_get_osd_set(net_dvo_custom_osd_set_t* osd_set);
+    bool dvo_set_osd_set(net_dvo_custom_osd_set_t* osd_set);
+    bool dvo_get_osd_row(net_dvo_custom_osd_row_t* osd_row);
+    bool dvo_set_osd_row(net_dvo_custom_osd_row_t* osd_row);
+
+    //nvr channel set
+    bool nvr_get_channel_set(net_nvr_channel_set_t* channel_set);
+
+    bool get_live_ipc_ae_info(net_live_ipc_ae_info_t* ae_info);
+    bool set_live_ipc_ae_info(net_live_ipc_ae_info_t* ae_info);
+
+    //black white status
+    bool get_black_white_status(int slot,net_black_white_status_t* bw_status);
+    bool set_black_white_status(int slot,net_black_white_status_t* bw_status);
+
+    //rfid
+    bool get_rfid_cfg(net_rfid_info_t* rfid_info);
+    bool set_rfid_cfg(net_rfid_info_t* rfid_info);
+
+    //yuv
+    bool capture_yuv(net_capture_yuv_req_t* req,char* buf,int buf_len,net_capture_yuv_response_t* yuv_info);
+
 private:
 	bool is_valid_slot(int slot);
 
 	bool udp_control(int type,udp_live_info_t* udp_live_info);
 
 protected:
-	virtual bool on_protocol_come(hw_msg& msg);
+	virtual bool on_protocol_come(hw_msg_ptr& msg);
 	
 protected:
 	bool m_log_ok;

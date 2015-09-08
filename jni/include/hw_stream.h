@@ -118,7 +118,7 @@ protected:
 	}time_label;
 	
 public:
-	net_file_stream (server_ref server,int slot,SYSTEMTIME beg,SYSTEMTIME end);
+	net_file_stream (server_ref server,int slot,int stream,SYSTEMTIME beg,SYSTEMTIME end,int type,int is_extend,int time_type);
 	virtual	~net_file_stream();
 	
 	int file_size();
@@ -139,8 +139,12 @@ protected:
 	bool m_start;		
 	server_ref m_server;
 	int m_slot;
+    int m_stream;
 	SYSTEMTIME m_beg;
 	SYSTEMTIME m_end;
+    int m_is_extend;
+    int m_time_type;
+    int m_type;
 	time_label m_label;
 	boost::thread m_thread;
 	video_head m_head;

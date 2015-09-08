@@ -524,7 +524,7 @@ JNIEXPORT int JNICALL Java_com_howell_ecameraap_VedioList_getListByPage
 	Pagination page;
 	page.page_size = page_size;
 	page.page_no = page_no;
-	int file_list_handle =  hwnet_get_file_list_by_page(user_handle,slot,stream, beg, end, type, order_by_time,&page);
+	int file_list_handle =  hwnet_get_file_list_by_page(user_handle,slot,stream, beg, end, type, order_by_time,0,&page);
 	if(file_list_handle == -1){
 		LOGE("hwnet_get_file_list_by_page failed \n");
 		return -1;
@@ -808,4 +808,36 @@ JNIEXPORT void JNICALL Java_com_howell_ecameraap_HWCameraActivity_ptzTurnDown
 	ctrl.cmd = 5;//Stop
 	ret = hwnet_ptz_ctrl(res->user_handle, &ctrl);
 	__android_log_print(ANDROID_LOG_INFO, "jni", "ptzTurnStop ret:%d",ret);
+}
+
+JNIEXPORT void JNICALL Java_com_howell_ecameraap_HWCameraActivity_zoomTele
+(JNIEnv *env, jobject obj,jint slot){
+
+	ptz_ctrl_t ctrl;
+	ctrl.slot = slot;
+	ctrl.control = 1;
+	ctrl.cmd = 3;//tele
+	ctrl.value = 64;
+	int ret = hwnet_ptz_ctrl(res->user_handle, &ctrl);
+	__android_log_print(ANDROID_LOG_INFO, "jni", "zoomTele ret:%d",ret);
+	usleep(800*1000);
+	ctrl.cmd = 7;//Stop
+	ret = hwnet_ptz_ctrl(res->user_handle, &ctrl);
+	__android_log_print(ANDROID_LOG_INFO, "jni", "stop ret:%d",ret);
+}
+
+JNIEXPORT void JNICALL Java_com_howell_ecameraap_HWCameraActivity_zoomWide
+(JNIEnv *env, jobject obj,jint slot){
+
+	ptz_ctrl_t ctrl;
+	ctrl.slot = slot;
+	ctrl.control = 1;
+	ctrl.cmd = 4;//wide
+	ctrl.value = 64;
+	int ret = hwnet_ptz_ctrl(res->user_handle, &ctrl);
+	__android_log_print(ANDROID_LOG_INFO, "jni", "zoomWide ret:%d",ret);
+	usleep(800*1000);
+	ctrl.cmd = 7;//Stop
+	ret = hwnet_ptz_ctrl(res->user_handle, &ctrl);
+	__android_log_print(ANDROID_LOG_INFO, "jni", "stop ret:%d",ret);
 }

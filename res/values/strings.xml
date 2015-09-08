@@ -4,9 +4,9 @@
     <string name="app_name">com.howell.ecameraAp</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
-	<string name="ip_address">IP address：</string>
-    <string name="camera_name">camera name：</string>
-    <string name="channel">channel：</string>
+	<string name="ip_address">IP：</string>
+    <string name="camera_name">Name：</string>
+    <string name="channel">Channel：</string>
     <string name="ok">ok</string>
     <string name="cancel">cancel</string>
     <string name="user_name">UserName：</string>
@@ -22,4 +22,12 @@
 	<string name="load_data">Now loading</string>
 	<string name="camera_list">Camera List</string>
 	<string name="download_list">Download List</string>
+	<string name="login_fail">login fail,please check your network first</string>
+	<string name="input_name">please input device name</string>
+	<string name="input_ip">please input devicde ip</string>
+	<string name="input_channel">please input device channel</string>
+	<string name="delete">delete</string>
+	<string name="wether_delete">wehter delete this device？</string>
+	<string name="zoom_tele">zoomtele</string>
+	<string name="zoom_wide">zoomwide</string>
 </resources>

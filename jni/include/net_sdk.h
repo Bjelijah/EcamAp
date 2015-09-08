@@ -192,6 +192,8 @@ FILE_STREAM_HANDLE hwnet_get_file_stream(USER_HANDLE handle,int slot,SYSTEMTIME 
 
 FILE_STREAM_HANDLE hwnet_get_file_stream_ex(USER_HANDLE handle,int slot,SYSTEMTIME beg,SYSTEMTIME end,int type,file_stream_fun* fun,long userdata,file_stream_t* file_info);
 
+FILE_STREAM_HANDLE hwnet_get_file_stream_ex2(USER_HANDLE handle,int slot,int stream,SYSTEMTIME beg,SYSTEMTIME end,int file_type,int time_type,file_stream_fun* fun,long userdata,file_stream_t* file_info);
+
 
 /*关闭录像文件数据
  * handle:					hwnet_get_file_stream()返回的句柄
@@ -228,9 +230,10 @@ FILE_LIST_HANDLE hwnet_get_file_list(USER_HANDLE handle,int slot,SYSTEMTIME beg,
  * end:						搜索结束时间
  * type:					文件类型 0-所有文件 1-普通录像文件 2-运动录像文件
  * order_by_time:           0:升序  1:降序
+ * time_type:               时间类型 0:北京时间 1:UTC时间
  * page_info:               请参照Pagination结构 
  */
-FILE_LIST_HANDLE hwnet_get_file_list_by_page(USER_HANDLE handle,int slot,int stream,SYSTEMTIME beg,SYSTEMTIME end,int type,int order_by_time,Pagination* page_info);
+FILE_LIST_HANDLE hwnet_get_file_list_by_page(USER_HANDLE handle,int slot,int stream,SYSTEMTIME beg,SYSTEMTIME end,int type,int order_by_time,int time_type,Pagination* page_info);
 
 
 /*获取文件列表个数
@@ -1081,6 +1084,11 @@ BOOL hwnet_ipc_manual_black_white_status(USER_HANDLE handle,int slot,net_black_w
 BOOL hwnet_ipc_get_rfid_info(USER_HANDLE handle,net_rfid_info_t* rfid);
 BOOL hwnet_ipc_set_rfid_info(USER_HANDLE handle,net_rfid_info_t* rfid);
 
+
+/**
+ * 获取YUV
+ */
+BOOL hwnet_get_remote_yuv(USER_HANDLE handle,net_capture_yuv_req_t* req,char* buf,int buf_len,net_capture_yuv_response_t* yuv_info);
 
 /*
  * 获取错误值

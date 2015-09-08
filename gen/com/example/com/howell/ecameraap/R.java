@@ -522,17 +522,17 @@ public final class R {
         public static final int webapp_bottom_add=0x7f020035;
     }
     public static final class id {
-        public static final int action_settings=0x7f090036;
-        public static final int alpha=0x7f090034;
+        public static final int action_settings=0x7f090039;
+        public static final int alpha=0x7f090037;
         public static final int animation_aim=0x7f090025;
         public static final int animation_back=0x7f090024;
         public static final int btn_cancel=0x7f090004;
-        public static final int btn_login=0x7f09002d;
+        public static final int btn_login=0x7f090030;
         public static final int btn_ok=0x7f090003;
         public static final int camera_circle=0x7f09001d;
         public static final int camera_list=0x7f090009;
         public static final int catch_picture=0x7f090020;
-        public static final int delete=0x7f090030;
+        public static final int delete=0x7f090033;
         public static final int dialog_download_progress_bar=0x7f090010;
         public static final int dialog_download_progress_value=0x7f09000f;
         public static final int download=0x7f090022;
@@ -543,26 +543,29 @@ public final class R {
         public static final int et_camera_name=0x7f090000;
         public static final int et_channel=0x7f090002;
         public static final int et_ip=0x7f090001;
-        public static final int et_user_name=0x7f09002b;
-        public static final int et_user_password=0x7f09002c;
+        public static final int et_user_name=0x7f09002e;
+        public static final int et_user_password=0x7f09002f;
         public static final int foot_contentLayout=0x7f090014;
         public static final int foot_progressBar=0x7f090016;
         public static final int foot_tipsTextView=0x7f090017;
         public static final int frameLayout1=0x7f090015;
         public static final int glsurface=0x7f090018;
         public static final int glsurface_view=0x7f090019;
-        public static final int head_arrowImageView=0x7f090027;
-        public static final int head_contentLayout=0x7f090026;
-        public static final int head_lastUpdatedTextView=0x7f09002a;
-        public static final int head_progressBar=0x7f090028;
-        public static final int head_tipsTextView=0x7f090029;
-        public static final int holder=0x7f09002f;
+        public static final int head_arrowImageView=0x7f09002a;
+        public static final int head_contentLayout=0x7f090029;
+        public static final int head_lastUpdatedTextView=0x7f09002d;
+        public static final int head_progressBar=0x7f09002b;
+        public static final int head_tipsTextView=0x7f09002c;
+        public static final int holder=0x7f090032;
         public static final int ib_add_cam=0x7f090008;
-        public static final int ib_vediolist_back=0x7f090031;
-        public static final int ib_vediolist_search=0x7f090032;
+        public static final int ib_vediolist_back=0x7f090034;
+        public static final int ib_vediolist_search=0x7f090035;
         public static final int iv_icon=0x7f09000d;
-        public static final int mylistview_vedio_list=0x7f090033;
-        public static final int name=0x7f090035;
+        public static final int mylistview_vedio_list=0x7f090036;
+        public static final int name=0x7f090038;
+        public static final int player_ptz_control=0x7f090026;
+        public static final int player_zoomtele=0x7f090027;
+        public static final int player_zoomwide=0x7f090028;
         public static final int quality=0x7f09001e;
         public static final int radio_group=0x7f090005;
         public static final int rb_camera_list=0x7f090006;
@@ -575,7 +578,7 @@ public final class R {
         public static final int tv_camera_name=0x7f09000b;
         public static final int tv_stream_len=0x7f09001c;
         public static final int vedio_list=0x7f09001f;
-        public static final int view_content=0x7f09002e;
+        public static final int view_content=0x7f090031;
         public static final int waitProgressBar=0x7f090023;
     }
     public static final class layout {
@@ -605,13 +608,18 @@ public final class R {
         public static final int camera_name=0x7f060004;
         public static final int cancel=0x7f060007;
         public static final int channel=0x7f060005;
+        public static final int delete=0x7f060019;
         public static final int download_list=0x7f060014;
         public static final int hello_world=0x7f060002;
+        public static final int input_channel=0x7f060018;
+        public static final int input_ip=0x7f060017;
+        public static final int input_name=0x7f060016;
         public static final int ip_address=0x7f060003;
         public static final int last_update=0x7f060011;
         public static final int load_data=0x7f060012;
         public static final int load_more=0x7f06000d;
         public static final int login=0x7f06000a;
+        public static final int login_fail=0x7f060015;
         public static final int no_sdcard=0x7f06000b;
         public static final int ok=0x7f060006;
         public static final int pull_to_refresh=0x7f06000e;
@@ -620,6 +628,9 @@ public final class R {
         public static final int save_picture=0x7f06000c;
         public static final int user_name=0x7f060008;
         public static final int user_password=0x7f060009;
+        public static final int wether_delete=0x7f06001a;
+        public static final int zoom_tele=0x7f06001b;
+        public static final int zoom_wide=0x7f06001c;
     }
     public static final class style {
         /** 

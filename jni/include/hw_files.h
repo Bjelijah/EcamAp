@@ -40,8 +40,8 @@ public:
 	bool refresh();
 
 protected:
-	bool on_protocol_come(hw_msg& msg);
-	bool wait_file_finsished(int timeout = 5000);
+	bool on_protocol_come(hw_msg_ptr& msg);
+	bool wait_file_finsished(int timeout = 50000);
 
 protected:
 	bool m_file_finished;
@@ -61,6 +61,26 @@ private:
 	RECT m_search_rt;
 };
 
+class hw_net_files_page
+: public hw_net_files
+{
+public:
+	hw_net_files_page(server_ref server, int slot,int sream,SYSTEMTIME beg,SYSTEMTIME end,int order_by_time,int time_type, Pagination* page_info,int type = hw_files::FILE_ALL);
+	virtual ~hw_net_files_page();
+
+	bool refresh();
+
+    Pagination get_page_info();
+
+protected:
+	bool on_protocol_come(hw_msg_ptr& msg);
+    int m_stream;
+    int m_order_by_time;
+    int m_time_type;
+    Pagination m_page_info;
+    Pagination m_page_ret;
+    bool m_is_get_page_ret;
+};
 typedef boost::shared_ptr<hw_files> file_list_ref;
 
 #endif

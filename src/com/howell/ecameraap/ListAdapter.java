@@ -44,10 +44,10 @@ public class ListAdapter extends BaseAdapter {
     public void delete(){
         //删除所选的项
     	new AlertDialog.Builder(context).
-		setTitle("删除").   
-	    setMessage("是否删除此项？").   
+		setTitle(context.getResources().getString(R.string.delete)).   
+	    setMessage(context.getResources().getString(R.string.wether_delete)).   
 	    setIcon(R.drawable.expander_ic_minimized).   
-	    setPositiveButton("确定", new DialogInterface.OnClickListener() {
+	    setPositiveButton(context.getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
 				
 			@Override
 			public void onClick(DialogInterface arg0, int arg1) {
@@ -61,7 +61,7 @@ public class ListAdapter extends BaseAdapter {
 		        
 			}
 		}).   
-		setNegativeButton("取消", new DialogInterface.OnClickListener(){
+		setNegativeButton(context.getResources().getString(R.string.cancel), new DialogInterface.OnClickListener(){
 
 			@Override
 			public void onClick(DialogInterface arg0, int arg1) {

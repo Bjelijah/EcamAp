@@ -153,10 +153,14 @@ public class VedioList extends Activity implements OnItemClickListener,OnClickLi
 	
 	private ReplayFile getEpoch2NowTime(){
 		Calendar calendar = Calendar.getInstance();
-		return new ReplayFile((short)1970, (short)1, (short)1, (short)0,(short) 0, (short)0
+		
+		ReplayFile r = new ReplayFile((short)1970, (short)1, (short)1, (short)0,(short) 0, (short)0
 				, (short)calendar.get(Calendar.YEAR), (short)(calendar.get(Calendar.MONTH) + 1)
-				, (short)calendar.get(Calendar.DAY_OF_MONTH), (short)calendar.get(Calendar.HOUR)
+				, (short)calendar.get(Calendar.DAY_OF_MONTH), (short)calendar.get(Calendar.HOUR_OF_DAY)
 				, (short)calendar.get(Calendar.MINUTE), (short)calendar.get(Calendar.SECOND));
+		Log.e("Calendar", r.toString());
+		return r;
+		
 	}
 	
 	@Override

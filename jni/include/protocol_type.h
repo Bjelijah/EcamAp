@@ -603,23 +603,49 @@ typedef struct
 
 typedef struct
 {
-    // req
-    uint32_t page_size; // 每页多少条记录，0:无分页
-    uint32_t page_no; // 页号, from 0
-    //             // rsp
-    uint32_t total_size; // 总过多少条记录
-    uint32_t cur_size; // 当前页多少条记录
-    uint32_t page_count; // 总共多少页
+    //需要用户填写
+    uint32_t page_size; //每页多少条记录，0:无分页
+    uint32_t page_no; //页号, from 0
+
+    //返回
+    uint32_t total_size; //总共多少条记录
+    uint32_t cur_size; //当前页多少条记录
+    uint32_t page_count; //总共多少页
 } Pagination;
 typedef struct {
     uint32_t channel;
     uint32_t stream;
     SYSTEMTIME beg;
     SYSTEMTIME end;
-    uint32_t type;/*0-normal 1-normal file 2-mot file*/
+    uint32_t type;/*0-normal 1-normal file 2-mot file*/ 
     uint32_t order_by_time; // 0:升序 1:降序
+    uint32_t time_type;
     Pagination pagination;
 }NetGetRecrodFile;
+
+typedef struct
+{
+    int slot;
+    int stream;
+    char reserve[16];
+}net_capture_yuv_req_t;
+typedef struct
+{
+    int len;
+    int pitch;
+    int width;
+    int height;
+    char reserve[16];
+}net_capture_yuv_response_t;
+
+typedef struct {
+    int channel;
+    int stream;
+    SYSTEMTIME beg;
+    SYSTEMTIME end;
+    int time_type;
+    int reserved[32];
+} NetGetRecord;
 
 #endif
 

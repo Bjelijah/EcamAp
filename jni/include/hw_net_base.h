@@ -55,10 +55,10 @@ public:
 	bool is_connected();
 
 protected:
-	virtual bool on_protocol_come(hw_msg& msg);
+	virtual bool on_protocol_come(hw_msg_ptr& msg);
 
 	bool send_protocol(unsigned long type,const char* data,int len);
-	bool wait_net_response(unsigned long type,hw_msg& response,int timeout = 5000);
+	bool wait_net_response(unsigned long type,hw_msg_ptr& response,int timeout = 5000);
 	void on_recv_thread();
 
 protected:
@@ -72,7 +72,7 @@ protected:
 
 	boost::mutex m_send_mu;
 	boost::mutex m_response_mu;
-	std::map<unsigned long ,hw_msg> m_net_responses;
+	std::map<unsigned long ,hw_msg_ptr> m_net_responses;
 };
 
 #endif

@@ -222,7 +222,7 @@ public class CameraList extends Activity implements OnItemClickListener{
 			intent.putExtra("slot", cameras.get((int)arg3).channel);
 			startActivity(intent);
 		}else{
-			postAlerDialog(CameraList.this,"连接失败,请确认ip是否正确！");
+			postAlerDialog(CameraList.this,getResources().getString(R.string.login_fail));
 		}
 	}
 	
@@ -230,7 +230,7 @@ public class CameraList extends Activity implements OnItemClickListener{
 		new AlertDialog.Builder(context)   
 	//    .setTitle("�û�����������")   
 	    .setMessage(message)                 
-	    .setPositiveButton("确定", null)   
+	    .setPositiveButton(getResources().getString(R.string.ok), null)   
 	    .show();  
 	}
 }

@@ -44,15 +44,15 @@ public class AddCamera extends Activity {
 				String ip = Ip.getText().toString();
 				String s_channel = channel.getText().toString();
 				if(name.equals("")){
-					Utils.postToast(AddCamera.this, "请输入设备名", 2000);
+					Utils.postToast(AddCamera.this, getResources().getString(R.string.input_name), 2000);
 					break;
 				}
 				if(ip.equals("")){
-					Utils.postToast(AddCamera.this, "请输入设备ip", 2000);
+					Utils.postToast(AddCamera.this, getResources().getString(R.string.input_ip), 2000);
 					break;
 				}
 				if(s_channel.equals("")){
-					Utils.postToast(AddCamera.this, "请输入通道号", 2000);
+					Utils.postToast(AddCamera.this, getResources().getString(R.string.input_channel), 2000);
 					break;
 				}
 				mDBManager.add(new Camera(name,ip,Integer.valueOf(s_channel)));

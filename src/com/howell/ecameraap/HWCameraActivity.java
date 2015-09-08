@@ -32,6 +32,7 @@ import android.view.View.OnTouchListener;
 import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
@@ -82,6 +83,8 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 	private final static String photoPath = Environment.getExternalStorageDirectory().getAbsolutePath()+"/eCamera_Ap";
 	
 	private GestureDetector mGestureDetector;
+	private TextView zoomTele,zoomWide;
+	private RelativeLayout ptzControl;
 	
 	ProgressDialog downloadDialog;  
 	int dataLen;
@@ -161,6 +164,9 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
  		streamLen = (TextView)findViewById(R.id.tv_stream_len);
  		surfaceControl = (LinearLayout)findViewById(R.id.surface_icons);
  		download = (ImageButton)findViewById(R.id.download);
+ 		zoomTele = (TextView)findViewById(R.id.player_zoomtele);
+ 		zoomWide = (TextView)findViewById(R.id.player_zoomwide);
+ 		ptzControl = (RelativeLayout)findViewById(R.id.player_ptz_control);
  		handler = new MyHandler();
  		
  		if(isPlayBack == 0){
@@ -232,6 +238,8 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
  		sound.setOnClickListener(listener);
  		vedioList.setOnClickListener(listener);
  		download.setOnClickListener(listener);
+ 		zoomTele.setOnClickListener(listener);
+ 		zoomWide.setOnClickListener(listener);
  		//pause.setOnClickListener(listener);
     }
     
@@ -291,6 +299,31 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 				createProgressDialog();
 				DownloadFreshTask downloadFreshTask = new DownloadFreshTask();
 				downloadFreshTask.execute();
+				break;
+			case R.id.player_zoomtele:
+				new AsyncTask<Void, Integer, Void>(){
+
+					@Override
+					protected Void doInBackground(Void... arg0) {
+						// TODO Auto-generated method stub
+						zoomTele(slot);
+						return null;
+					}
+					
+				}.execute();
+				break;
+			case R.id.player_zoomwide:
+				new AsyncTask<Void, Integer, Void>(){
+
+					@Override
+					protected Void doInBackground(Void... arg0) {
+						// TODO Auto-generated method stub
+						zoomWide(slot);
+						return null;
+					}
+					
+				}.execute();
+				
 				break;
 			default:
 				break;
@@ -500,10 +533,12 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 			,short begMinute,short begSecond,short endYear,short endMonth,short endDay,short endHour,short endMinute
 			,short endSecond);
 	
-	public native int ptzTurnLeft(int slot);
-	public native int ptzTurnRight(int slot);
-	public native int ptzTurnUp(int slot);
-	public native int ptzTurnDown(int slot);
+	public native void ptzTurnLeft(int slot);
+	public native void ptzTurnRight(int slot);
+	public native void ptzTurnUp(int slot);
+	public native void ptzTurnDown(int slot);
+	public native void zoomTele(int slot);
+	public native void zoomWide(int slot);
 	
 	private void displayError(){
 		if(!isFinishing())
@@ -587,10 +622,12 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 		if (this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){
 			Log.i("info", "onConfigurationChanged landscape"); 
 			surfaceControl.setVisibility(View.GONE);
+			ptzControl.setVisibility(View.GONE);
 			isSufaceControlShown = false;
 		} else if(this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
 			Log.i("info", "onConfigurationChanged PORTRAIT"); 
 			surfaceControl.setVisibility(View.VISIBLE);
+			ptzControl.setVisibility(View.VISIBLE);
 			isSufaceControlShown = true;
 		}
 	}
@@ -672,9 +709,11 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 		if(PhoneConfig.getPhoneHeight(this) < PhoneConfig.getPhoneWidth(this)){
 			if(isSufaceControlShown){
 				surfaceControl.setVisibility(View.GONE);
+				ptzControl.setVisibility(View.GONE);
 				isSufaceControlShown = false;
 			}else{
 				surfaceControl.setVisibility(View.VISIBLE);
+				ptzControl.setVisibility(View.VISIBLE);
 				isSufaceControlShown = true;
 			}
 		}
