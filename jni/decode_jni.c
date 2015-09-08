@@ -186,7 +186,7 @@ static PLAY_HANDLE init_play_handle(int slot,int is_playback ,SYSTEMTIME beg,SYS
 	HW_MEDIAINFO media_head;
 	memset(&media_head,0,sizeof(media_head));
 	if(!is_playback){//预览
-		res->live_stream_handle = hwnet_get_live_stream(res->user_handle,slot,1,0,on_live_stream_fun,0);
+		res->live_stream_handle = hwnet_get_live_stream(res->user_handle,slot,1,1,on_live_stream_fun,0);
 		__android_log_print(ANDROID_LOG_INFO, "jni", "live_stream_handle: %d",res->live_stream_handle);
 		__android_log_print(ANDROID_LOG_INFO, "jni", "1");
 		//int media_head_len = 0;
