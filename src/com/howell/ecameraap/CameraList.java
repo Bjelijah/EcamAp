@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
@@ -28,11 +29,16 @@ public class CameraList extends Activity implements OnItemClickListener{
     private ListAdapter adapter;
     private boolean isMove = false;//限制滑动时触发OnItemClickListener的标志位
     
+//	WifiManager.MulticastLock lock; 
+    
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.camera_list);
+//		WifiManager manager = (WifiManager)getSystemService(Context.WIFI_SERVICE);
+//		lock = manager.createMulticastLock("UDPwifi");
+//		lock.acquire();
 		addCam = (ImageButton)findViewById(R.id.ib_add_cam);
 		addCam.setOnClickListener(new OnClickListener() {
 			
@@ -194,6 +200,7 @@ public class CameraList extends Activity implements OnItemClickListener{
 	    super.onDestroy();  
 	    //Ӧ�õ����һ��Activity�ر�ʱӦ�ͷ�DB  
 	    mDBManager.closeDB();  
+//	    lock.release();
 	}
 	
 	@Override
@@ -214,13 +221,16 @@ public class CameraList extends Activity implements OnItemClickListener{
 		if(isMove){
 			return;
 		}
+		
 		if(HWCameraActivity.cameraLogin(cameras.get((int)arg3).ip) != -1){
+			
 			Intent intent = new Intent(CameraList.this,HWCameraActivity.class);
 			//intent.putExtra("camera", cameras.get((int)arg3).ip);
 			intent.putExtra("playback", 0);//预览
 			intent.putExtra("ip", cameras.get((int)arg3).ip);
 			intent.putExtra("slot", cameras.get((int)arg3).channel);
 			startActivity(intent);
+//			lock.release();
 		}else{
 			postAlerDialog(CameraList.this,getResources().getString(R.string.login_fail));
 		}

@@ -388,7 +388,7 @@ JNIEXPORT int JNICALL Java_com_howell_ecameraap_HWCameraActivity_setFlip
 
 JNIEXPORT int JNICALL Java_com_howell_ecameraap_HWCameraActivity_getStreamLen
 (JNIEnv *env, jobject obj){
-	__android_log_print(ANDROID_LOG_INFO, "jni", "getStreamLen");
+	//__android_log_print(ANDROID_LOG_INFO, "jni", "getStreamLen");
 	return res->stream_len;
 }
 
@@ -541,6 +541,25 @@ JNIEXPORT int JNICALL Java_com_howell_ecameraap_VedioList_getListByPage
 	LOGE("page.total_size:%d ,page.cur_size:%d ,page.page_count:%d",page.total_size,page.cur_size,page.page_count);
 	return file_list_handle;
 }
+
+/*struct xxx {
+	int channel;
+	systemtime beg;
+	systemtaj end;
+	int type;
+};
+struct yyy {
+	int fileno;
+	systemtime created;
+	int totoal_seconds;
+	int total_frames;
+	int cur_offset;
+};
+
+struct xxx old;
+struct yyy new;
+memcpy(&old,&new,sizeof(new));
+get_video(old.channel,old.beg,old.end);*/
 
 JNIEXPORT int JNICALL Java_com_howell_ecameraap_HWCameraActivity_getReplayListCount
 (JNIEnv *env, jclass cls){
