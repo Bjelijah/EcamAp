@@ -115,7 +115,7 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 	    if(isPlayBack == 0){
 	    	ret = display(slot,isPlayBack,(short)0,(short)0,(short)0,(short)0,(short)0,(short)0,(short)0,(short)0,(short)0,(short)0,(short)0,(short)0);
 	    }else{
-	    	ret = display(slot,isPlayBack, replayfile.begYear, replayfile.begMonth, replayfile.begDay, replayfile.begHour, replayfile.begMinute, replayfile.begSecond
+	    	ret = display(slot,isPlayBack,replayfile.begYear, replayfile.begMonth, replayfile.begDay, replayfile.begHour, replayfile.begMinute, replayfile.begSecond
 	    			, replayfile.endYear, replayfile.endMonth, replayfile.endDay, replayfile.endHour, replayfile.endMinute, replayfile.endSecond);
 	    	Log.e("", "test display "+replayfile.toString());
 	    }
@@ -163,7 +163,7 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
  		catch_picture = (ImageButton)findViewById(R.id.catch_picture);
  		streamLen = (TextView)findViewById(R.id.tv_stream_len);
  		surfaceControl = (LinearLayout)findViewById(R.id.surface_icons);
- 		download = (ImageButton)findViewById(R.id.download);
+// 		download = (ImageButton)findViewById(R.id.download);
  		zoomTele = (TextView)findViewById(R.id.player_zoomtele);
  		zoomWide = (TextView)findViewById(R.id.player_zoomwide);
  		ptzControl = (RelativeLayout)findViewById(R.id.player_ptz_control);
@@ -173,7 +173,7 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
  			replaySeekBar.setVisibility(View.GONE);
  	 		//pause.setVisibility(View.GONE);
  	 		vedioList.setVisibility(View.VISIBLE);
- 	 		download.setVisibility(View.GONE);
+ 	 		//download.setVisibility(View.GONE);
  	 		circle.setVisibility(View.VISIBLE);
  	 		quality.setVisibility(View.VISIBLE);
  	 		ip = intent.getStringExtra("ip");
@@ -181,7 +181,7 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
  			replaySeekBar.setVisibility(View.VISIBLE);
  	 		//pause.setVisibility(View.VISIBLE);
  	 		vedioList.setVisibility(View.GONE);
- 	 		download.setVisibility(View.VISIBLE);
+ 	 		//download.setVisibility(View.VISIBLE);
  	 		circle.setVisibility(View.GONE);
  	 		quality.setVisibility(View.GONE);
  	 		replayfile = (ReplayFile) intent.getSerializableExtra("replayfile");
@@ -237,7 +237,7 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
  		circle.setOnClickListener(listener);
  		sound.setOnClickListener(listener);
  		vedioList.setOnClickListener(listener);
- 		download.setOnClickListener(listener);
+ 		//download.setOnClickListener(listener);
  		zoomTele.setOnClickListener(listener);
  		zoomWide.setOnClickListener(listener);
  		//pause.setOnClickListener(listener);
@@ -295,11 +295,11 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 				task.execute();
 				break;
 				
-			case R.id.download:
-				createProgressDialog();
-				DownloadFreshTask downloadFreshTask = new DownloadFreshTask();
-				downloadFreshTask.execute();
-				break;
+//			case R.id.download:
+//				createProgressDialog();
+//				DownloadFreshTask downloadFreshTask = new DownloadFreshTask();
+//				downloadFreshTask.execute();
+//				break;
 			case R.id.player_zoomtele:
 				new AsyncTask<Void, Integer, Void>(){
 
@@ -352,12 +352,12 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 		 downloadDialog.show();  
 	}
 	
-	public void refreshDataLen(int len){
-		dataLen += len;
-//		System.out.println("a-7 dataLen:"+dataLen);
-	}
+//	public void refreshDataLen(int len){
+//		dataLen += len;
+////		System.out.println("a-7 dataLen:"+dataLen);
+//	}
 	
-	public class DownloadFreshTask extends AsyncTask<Void, Integer, Void> {
+	/*public class DownloadFreshTask extends AsyncTask<Void, Integer, Void> {
 		int totalLen;
 		private String removeMarks(String SSID){
 			if(SSID.startsWith("\"") && SSID.endsWith("\"")){
@@ -371,7 +371,7 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 			NetWorkUtils utils = new NetWorkUtils(HWCameraActivity.this);
 			String ssid = utils.getSSID();
 			System.out.println("ssid:"+ssid);
-			String fileName = Environment.getExternalStorageDirectory()+"/eCamera_AP/"+removeMarks(ssid)+"-"+replayfile.begYear+replayfile.begMonth+replayfile.begDay+replayfile.begHour+replayfile.begMinute+replayfile.begSecond+".mp4";
+			String fileName = Environment.getExternalStorageDirectory()+"/eCamera_AP/"+removeMarks(ssid)+"-"+replayfile.begYear+replayfile.begMonth+replayfile.begDay+replayfile.begHour+replayfile.begMinute+replayfile.begSecond+".hwr";
 			totalLen = downloadInit(fileName,slot, replayfile.begYear, replayfile.begMonth, replayfile.begDay, replayfile.begHour, replayfile.begMinute, replayfile.begSecond
 	    			, replayfile.endYear, replayfile.endMonth, replayfile.endDay, replayfile.endHour, replayfile.endMinute, replayfile.endSecond);
 			downloadDialog.setMax(totalLen);
@@ -382,7 +382,7 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 			}else{
 				while(dataLen < totalLen){
 					try {
-						Thread.sleep(100);
+						Thread.sleep(1000);
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -401,7 +401,7 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 			downloadDialog.setProgress(progress[0]);//更新进度条的进度  
 			downloadDialog.setMessage("下载中");
 			//System.out.println("finish set progress");
-         }  
+        }  
 		
 		@Override
 		protected void onPostExecute(Void result) {
@@ -414,7 +414,7 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 			downloadDialog.dismiss();
 		}
 
-	}
+	}*/
 	
 	public class QuitToVedioListTask extends AsyncTask<Void, Integer, Void> {
 
@@ -512,10 +512,14 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
         return mPlayer;
     }
     
-    private native int downloadInit(String fileName,int slot,short begYear,short begMonth,short begDay,short begHour
+//    public native int downloadInit(String fileName,int slot,short begYear,short begMonth,short begDay,short begHour
+//    		,short begMinute,short begSecond,short endYear,short endMonth,short endDay,short endHour,short endMinute
+//    		,short endSecond);
+//    private native void downloadDestory();
+    private native int downloadInitEx(String fileName,int slot,short begYear,short begMonth,short begDay,short begHour
     		,short begMinute,short begSecond,short endYear,short endMonth,short endDay,short endHour,short endMinute
     		,short endSecond);
-    private native void downloadDestory();
+    private native void downloadDestoryEx();
     private native int display(int slot,int isPlayBack,short begYear,short begMonth,short begDay,short begHour
 	,short begMinute,short begSecond,short endYear,short endMonth,short endDay,short endHour,short endMinute
 	,short endSecond);

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<color name="light_gray">#BABABA</color>
+	<color name="black2">#252932</color>
     <color name="white">#FFFFFF</color>
     <!-- 白色 -->
     <color name="ivory">#FFFFF0</color>
@@ -190,6 +191,7 @@
     <color name="skyblue">#87CEEB</color>
     <!-- 天蓝色 -->
     <color name="gray">#808080</color>
+    <color name="gray2">#969696</color>
     <!-- 灰色 -->
     <color name="grey">#808080</color>
     <!-- 灰色 -->

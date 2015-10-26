@@ -47,7 +47,7 @@
                 android:layout_marginBottom="2dip"
                 android:drawableTop="@drawable/tab_camera_selector"
                 android:text="@string/camera_list"
-                android:textColor="@color/blue" />
+                android:textColor="@color/black2" />
             
             <RadioButton
                 android:id="@+id/rb_settings"

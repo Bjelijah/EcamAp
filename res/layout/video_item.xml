@@ -14,23 +14,23 @@
         android:gravity="center_vertical"
         android:paddingLeft="10dip"
         android:textColor="#FFFFFF"
-        android:textSize="18dip"
+        android:textSize="18sp"
         android:textStyle="bold"
         android:visibility="gone" />
 
-    <FrameLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical" >
+        android:layout_height="match_parent" >
 
-        <TextView
+        <!--  <TextView
             android:id="@+id/name"
             android:layout_width="wrap_content"
-            android:layout_height="55dip"
+            android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:paddingLeft="10dip"
+            android:paddingRight="20dip"
             android:textColor="@android:color/black"
-            android:textSize="18dip"
+            android:textSize="18sp"
             android:textStyle="bold" />
 
         <ImageView
@@ -38,8 +38,99 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="5dip"
             android:layout_gravity="right|center_vertical"
-            android:src="@drawable/qz_icon_forward_normal" />
+            android:src="@drawable/qz_icon_forward_normal" />-->
 
-    </FrameLayout>
+        <!-- <TextView
+            android:id="@+id/video_item_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_toLeftOf="@+id/video_item_download_progress"
+            android:layout_above="@+id/video_item_name2"
+            android:paddingLeft="10dip"
+            android:paddingRight="10dip"
+            android:textColor="@android:color/black"
+            android:textSize="15sp"/> -->
+
+        <!-- <ImageView
+            android:id="@+id/video_item_download_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:paddingRight="10dp"
+        	android:paddingTop="5dp"
+        	android:paddingBottom="5dp"
+        	android:paddingLeft="5dp"
+            android:src="@drawable/dowload"
+             /> -->
+        
+        <Button
+	        android:id="@+id/video_item_download_icon"
+	        android:layout_width="55dip"
+        	android:layout_height="30dip"
+	        android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="5dp"
+            android:layout_marginLeft="5dp"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="15dp"
+	        android:background="@drawable/style_btn_download"
+	        android:focusable="false"
+	        android:text="下载"
+	        android:textColor="#ffffffff"
+	        android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/video_item_download_progress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_alignBaseline="@+id/video_item_name_layout"
+            android:layout_alignBottom="@+id/video_item_name_layout"
+            android:layout_toLeftOf="@+id/video_item_download_icon"
+            android:textColor="@color/gray2"
+            android:textSize="18sp" />
+
+        <!-- <TextView
+            android:id="@+id/video_item_name2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignBottom="@+id/video_item_download_icon"
+            android:layout_toLeftOf="@+id/video_item_download_icon"
+            android:paddingLeft="10dip"
+            android:paddingRight="10dip"
+            android:textSize="15sp"/> -->
+
+        <LinearLayout
+            android:id="@+id/video_item_name_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_toLeftOf="@+id/video_item_download_progress"
+            android:layout_centerVertical="@+id/video_item_download_icon"
+            android:orientation="vertical"
+            android:paddingLeft="10dip"
+	        android:paddingRight="10dip"
+	        android:background="@drawable/videolist_bg_selector" >
+            <TextView
+	            android:id="@+id/video_item_name"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:gravity="center"
+	            android:textColor="@android:color/black"
+	            android:textSize="15sp"/>
+            <TextView
+	            android:id="@+id/video_item_name2"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:textSize="15sp"
+	            android:gravity="center"/>
+        </LinearLayout>
+
+    </RelativeLayout>
 
 </LinearLayout>

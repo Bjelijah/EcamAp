@@ -19,6 +19,7 @@ import android.widget.ListView;
 import com.example.com.howell.ecameraap.R;
 import com.howell.db.Camera;
 import com.howell.db.DBManager;
+import com.howell.ecameraap.downloadfile.DownloadManager;
 
 public class CameraList extends Activity implements OnItemClickListener{
 	private ImageButton addCam/*,back*/;
@@ -194,6 +195,7 @@ public class CameraList extends Activity implements OnItemClickListener{
 	    super.onDestroy();  
 	    //Ӧ�õ����һ��Activity�ر�ʱӦ�ͷ�DB  
 	    mDBManager.closeDB();  
+	    //DownloadManager.getInstance().freeResource();
 	}
 	
 	@Override

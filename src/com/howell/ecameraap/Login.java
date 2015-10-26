@@ -5,6 +5,7 @@ import java.io.File;
 import com.example.com.howell.ecameraap.R;
 import android.app.Activity;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.View;
@@ -19,9 +20,32 @@ public class Login extends Activity{
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.login);
+		setContentView(R.layout.logo);
 		createFile();
-		login = (Button)findViewById(R.id.btn_login);
+		
+		new AsyncTask<Void, Integer, Void>() {
+
+			@Override
+			protected Void doInBackground(Void... arg0) {
+				// TODO Auto-generated method stub
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return null;
+			}
+			@Override
+			protected void onPostExecute(Void result) {
+				// TODO Auto-generated method stub
+				super.onPostExecute(result);
+				Intent intent = new Intent(Login.this,CameraList.class);
+				startActivity(intent);
+				finish();
+			}
+		}.execute();
+		/*login = (Button)findViewById(R.id.btn_login);
 		username = (EditText)findViewById(R.id.et_user_name);
 		password = (EditText)findViewById(R.id.et_user_password);
 		login.setOnClickListener(new OnClickListener() {
@@ -37,7 +61,7 @@ public class Login extends Activity{
 					
 				}
 			}
-		});
+		});*/
 	}
 	
 	private void createFile(){
@@ -59,10 +83,10 @@ public class Login extends Activity{
     }  
 	
 	
-	@Override
-	protected void onStop() {
-		// TODO Auto-generated method stub
-		super.onStop();
-		finish();
-	}
+//	@Override
+//	protected void onStop() {
+//		// TODO Auto-generated method stub
+//		super.onStop();
+//		finish();
+//	}
 }	

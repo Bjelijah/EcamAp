@@ -53,12 +53,12 @@ public class CamTabActivity extends TabActivity implements
         switch (checkedId) {
         case R.id.rb_camera_list:
             mHost.setCurrentTabByTag("cameralist");
-            mCameraList.setTextColor(getResources().getColor(R.color.blue));
+            mCameraList.setTextColor(getResources().getColor(R.color.black2));
             mSettings.setTextColor(getResources().getColor(R.color.light_gray));
             break;
         case R.id.rb_settings:
             mHost.setCurrentTabByTag("settings");
-            mSettings.setTextColor(getResources().getColor(R.color.blue));
+            mSettings.setTextColor(getResources().getColor(R.color.black2));
             mCameraList.setTextColor(getResources().getColor(R.color.light_gray));
             break;
         default:

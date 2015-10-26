@@ -86,4 +86,10 @@ public class Utils {
          String stringTime = foo.format(date);
          return stringTime;
     }
+    
+    public static String dateToString2(Date date){
+    	SimpleDateFormat foo = new SimpleDateFormat("HH:mm:ss");
+        String stringTime = foo.format(date);
+        return stringTime;
+   }
 }

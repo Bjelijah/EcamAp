@@ -31,6 +31,9 @@ struct StreamResource
 	jmethodID mid;
 	jobject obj;
 	pthread_mutex_t lock_put;
+
+	FILE *foutput;
+	//int is_mediahead_ready;
 	//int row,col;
 	//int color_mode;
 	//int year,month,day,hour,minute,second;
@@ -61,11 +64,16 @@ void on_live_stream_fun(LIVE_STREAM_HANDLE handle,int stream_type,const char* bu
 }
 
 void on_file_stream_fun(FILE_STREAM_HANDLE handle,const char* buf,int len,long userdata){
+	//if(res->is_download == 1){//下载
+		//FILE *foutput = fopen("/sdcard/eCamera_AP/test.hwr", "ab");
+	//	fwrite(buf, sizeof(buf), len, foutput);
+		//fclose(foutput);
+	//}
 	res->stream_len += len;
 	int ret = hwplay_input_data(res->play_handle, buf ,len);
 }
 
-void on_download_file_stream_fun(FILE_STREAM_HANDLE handle,const char* buf,int len,long userdata){
+void on_download_file_stream_fun_ex(FILE_STREAM_HANDLE handle,const char* buf,int len,long userdata){
 	pthread_mutex_lock(&res->lock_put);
 	__android_log_print(ANDROID_LOG_INFO, "jni", "len:%d",len);
 	input_stream(buf,len);
@@ -74,6 +82,27 @@ void on_download_file_stream_fun(FILE_STREAM_HANDLE handle,const char* buf,int l
 #endif
 	pthread_mutex_unlock(&res->lock_put);
 }
+
+void on_download_file_stream_fun(FILE_STREAM_HANDLE handle,const char* buf,int len,long userdata){
+	__android_log_print(ANDROID_LOG_INFO, "on_download_file_stream_fun", "len:%d",len);
+	pthread_mutex_lock(&res->lock_put);
+	while(res->foutput == NULL){
+		__android_log_print(ANDROID_LOG_INFO, "on_download_file_stream_fun", "sleep");
+		sleep(0.5);
+	}
+	if(res->foutput != NULL){
+		__android_log_print(ANDROID_LOG_INFO, "on_download_file_stream_fun write", "len:%d",len);
+		int ret = fwrite(buf, sizeof(unsigned char), len, res->foutput);
+		//__android_log_print(ANDROID_LOG_INFO, "fwrite_ret", "size:%d",ret);
+#if 1
+		__android_log_print(ANDROID_LOG_INFO, "on_download_file_stream_fun", "11");
+		call_java_method_refreshDataLen(len);
+		__android_log_print(ANDROID_LOG_INFO, "on_download_file_stream_fun", "22");
+#endif
+	}
+	pthread_mutex_unlock(&res->lock_put);
+}
+
 
 void call_java_method_refreshDataLen(int len){
 	if ((*res->jvm)->AttachCurrentThread(res->jvm, &res->env, NULL) != JNI_OK) {
@@ -104,10 +133,10 @@ void call_java_method_refreshDataLen(int len){
 	}
 	return;
 
-		error:
-		if ((*res->jvm)->DetachCurrentThread(res->jvm) != JNI_OK) {
-			LOGE("%s: DetachCurrentThread() failed", __FUNCTION__);
-		}
+	error:
+	if ((*res->jvm)->DetachCurrentThread(res->jvm) != JNI_OK) {
+		LOGE("%s: DetachCurrentThread() failed", __FUNCTION__);
+	}
 }
 
 static void on_yuv_callback_ex(PLAY_HANDLE handle,
@@ -181,7 +210,7 @@ int login(const char* ip){
 	return user_handle;
 }
 
-static PLAY_HANDLE init_play_handle(int slot,int is_playback ,SYSTEMTIME beg,SYSTEMTIME end){
+PLAY_HANDLE init_play_handle(int slot,int is_playback ,SYSTEMTIME beg,SYSTEMTIME end){
 	RECT area ;
 	HW_MEDIAINFO media_head;
 	memset(&media_head,0,sizeof(media_head));
@@ -211,7 +240,6 @@ static PLAY_HANDLE init_play_handle(int slot,int is_playback ,SYSTEMTIME beg,SYS
 	media_head.au_bits = 16; // 8,16...
 	media_head.au_sample = 8;//Kbps 8,16,64
 	media_head.au_channel = 1;//1,2*/
-
 	PLAY_HANDLE  ph = hwplay_open_stream((char*)&media_head,sizeof(media_head),1024*1024,is_playback,area);
 	hwplay_open_sound(ph);
 	hwplay_set_max_framenum_in_buf(ph,is_playback?25:5);
@@ -226,7 +254,48 @@ static PLAY_HANDLE init_play_handle(int slot,int is_playback ,SYSTEMTIME beg,SYS
 	return ph;
 }
 
-static void create_resource(JNIEnv *env, jobject obj)
+PLAY_HANDLE init_download_play_handle(int user_handle,int slot ,SYSTEMTIME beg,SYSTEMTIME end,char* file_name){
+	RECT area ;
+	HW_MEDIAINFO media_head;
+	memset(&media_head,0,sizeof(media_head));
+	//__android_log_print(ANDROID_LOG_INFO, "jni", "is_playback :%d",is_playback);
+	file_stream_t file_info;
+	res->download_file_stream_handle = hwnet_get_file_stream(user_handle,slot,beg,end,on_download_file_stream_fun,0,&file_info);
+	if(res->download_file_stream_handle == -1){
+		return -1;
+	}
+	//res->file_stream_handle = hwnet_get_file_stream(res->user_handle,slot,beg,end,on_file_stream_fun,0,&file_info);
+	__android_log_print(ANDROID_LOG_INFO, "jni", "download_file_stream_handle: %d total_len:%d",res->download_file_stream_handle,file_info.len);
+	int b = hwnet_get_file_stream_head(res->download_file_stream_handle,(char*)&media_head,1024,&res->media_head_len);
+	//media_head.adec_code = 0xa;
+	__android_log_print(ANDROID_LOG_INFO, "jni", "hwnet_get_file_stream_head ret:%d",b);
+	//res->is_mediahead_ready = 1;
+	//LOGE("file_name:%s",file_name);
+	FILE *foutput = fopen(file_name, "wb");
+	LOGE("111");
+	fwrite(&media_head, sizeof(media_head), 1, foutput);
+	LOGE("222");
+	fclose(foutput);
+	LOGE("333");
+	FILE *foutput_again = fopen(file_name, "ab");
+	LOGE("444");
+	//JNIEnv *env = NULL;
+    //if ((*res->jvm)->GetEnv(res->jvm, &env, JNI_VERSION_1_4) != JNI_OK) {
+     //   LOGI("Failed to obtain JNIEnv");
+    //    return ;
+    //}
+
+	//res->foutput = (*env)->NewGlobalRef(env,foutput_again);
+	res->foutput = foutput_again;
+	LOGE("555 %d",res->foutput == NULL);
+	//res->download_play_handle = hwplay_open_stream((char*)&media_head,sizeof(media_head),1024*1024,1,area);
+	//hwplay_open_sound(res->download_play_handle);
+	//hwplay_set_max_framenum_in_buf(res->download_play_handle,25);
+	//__android_log_print(ANDROID_LOG_INFO, "JNI", "download_play_handle is:%d",res->download_play_handle);
+	return file_info.len;
+}
+
+static void create_resource()
 {
   /* make sure init once */
   //__android_log_print(ANDROID_LOG_INFO, "!!!", "create_resource %d",is_playback);
@@ -234,10 +303,11 @@ static void create_resource(JNIEnv *env, jobject obj)
   //total_file_list_count = 0;
   is_first_stream = 0;
   res->stream_len = 0;
+  //res->is_mediahead_ready = 0;
   if (res == NULL) return;
 }
 
-JNIEXPORT int JNICALL Java_com_howell_ecameraap_HWCameraActivity_downloadInit
+int Java_com_howell_ecameraap_HWCameraActivity_downloadInitEx
 (JNIEnv *env, jobject obj, jstring j_file_name,int slot,jshort begYear,jshort begMonth,jshort begDay,jshort begHour
 		,jshort begMinute,jshort begSecond,jshort endYear,jshort endMonth,jshort endDay,jshort endHour,jshort endMinute
 		,jshort endSecond){
@@ -271,39 +341,123 @@ JNIEXPORT int JNICALL Java_com_howell_ecameraap_HWCameraActivity_downloadInit
 	return file_info.len;
 }
 
-JNIEXPORT int JNICALL Java_com_howell_ecameraap_HWCameraActivity_downloadDestory(JNIEnv *env, jobject obj){
+int Java_com_howell_ecameraap_downloadfile_DownloadManager_downloadInit
+(JNIEnv *env, jobject obj,jint user_handle, jstring j_file_name,int slot,jshort begYear,jshort begMonth,jshort begDay,jshort begHour
+		,jshort begMinute,jshort begSecond,jshort endYear,jshort endMonth,jshort endDay,jshort endHour,jshort endMinute
+		,jshort endSecond){
+	create_resource();
+	(*env)->GetJavaVM(env,&res->jvm);
+	res->obj = (*env)->NewGlobalRef(env,obj);
+	const char* file_name = (*env)-> GetStringUTFChars(env,j_file_name,NULL);
+	//download_init(file_name);
+	LOGE("filename:%s",file_name);
+	pthread_mutex_init(&res->lock_put,NULL);
+
+	SYSTEMTIME beg;
+	beg.wYear = begYear;
+	beg.wMonth = begMonth;
+	beg.wDay = begDay;
+	beg.wHour = begHour;
+	beg.wMinute = begMinute;
+	beg.wSecond = begSecond;
+	SYSTEMTIME end;
+	end.wYear = endYear;
+	end.wMonth = endMonth;
+	end.wDay = endDay;
+	end.wHour = endHour;
+	end.wMinute = endMinute;
+	end.wSecond = endSecond;
+	RECT area ;
+
+	int total_len = init_download_play_handle(user_handle,slot,beg,end,file_name);
+	(*env)->ReleaseStringUTFChars(env,j_file_name,file_name);
+	//HW_MEDIAINFO media_head;
+	//memset(&media_head,0,sizeof(media_head));
+	//file_stream_t file_info;
+	//memset(&file_info,0,sizeof(file_info));
+	//res->download_file_stream_handle = hwnet_get_file_stream(res->user_handle,slot,beg,end,on_download_file_stream_fun,0,&file_info);
+	return total_len;
+}
+
+int Java_com_howell_ecameraap_downloadfile_DownloadManager_downloadDestory(JNIEnv *env, jobject obj){
+	if(res->foutput != NULL){
+		fclose(res->foutput);
+		res->foutput = NULL;
+	}
+	hwnet_close_file_stream(res-> download_file_stream_handle);
+	//hwplay_stop(res->download_play_handle);
+	//hwnet_release();
+	(*env)->DeleteGlobalRef(env, res->obj);
+	(*env)->DeleteGlobalRef(env, res->foutput);
+	free(res);
+}
+
+int Java_com_howell_ecameraap_HWCameraActivity_downloadDestoryEx(JNIEnv *env, jobject obj){
 	download_deinit();
 	int ret = hwnet_close_file_stream(res-> download_file_stream_handle);
 }
 
-JNIEXPORT int JNICALL Java_com_howell_ecameraap_HWCameraActivity_cameraLogin
+int Java_com_howell_ecameraap_HWCameraActivity_cameraLogin
 (JNIEnv *env, jobject obj, jstring j_ip){
 	 __android_log_print(ANDROID_LOG_INFO, "!!!", "login");
 	const char* ip = (*env)-> GetStringUTFChars(env,j_ip,NULL);
 	 __android_log_print(ANDROID_LOG_INFO, "!!!", "ip %s",ip);
-	create_resource(env,obj);
+	create_resource();
 	res->user_handle = login(ip);
 	(*env)->ReleaseStringUTFChars(env,j_ip,ip);
 	return res->user_handle;
 }
 
-JNIEXPORT int JNICALL Java_com_howell_ecameraap_VedioList_vedioListLogin
+int Java_com_howell_ecameraap_VedioList_vedioListLogin
 (JNIEnv *env, jobject obj, jstring j_ip){
 	 __android_log_print(ANDROID_LOG_INFO, "!!!", "login");
 	const char* ip = (*env)-> GetStringUTFChars(env,j_ip,NULL);
 	 __android_log_print(ANDROID_LOG_INFO, "!!!", "ip %s",ip);
+	 //create_resource();
 	int ret = login(ip);
 	(*env)->ReleaseStringUTFChars(env,j_ip,ip);
 	return ret;
 }
 
-JNIEXPORT int JNICALL Java_com_howell_ecameraap_VedioList_vedioListLogout
+int Java_com_howell_ecameraap_VedioList_vedioListLogout
 (JNIEnv *env, jobject obj, int user_handle){
 	int ret = hwnet_logout(user_handle);
+	//free(res);
 	return ret;
 }
 
-JNIEXPORT int JNICALL Java_com_howell_ecameraap_HWCameraActivity_display
+int Java_com_howell_ecameraap_HWCameraActivity_display
+(JNIEnv *env, jclass cls,jint slot, jint is_playback,jshort begYear,jshort begMonth,jshort begDay,jshort begHour
+		,jshort begMinute,jshort begSecond,jshort endYear,jshort endMonth,jshort endDay,jshort endHour,jshort endMinute
+		,jshort endSecond){
+	__android_log_print(ANDROID_LOG_INFO, "!!!", "display slot:%d",slot);
+	res->is_playback = is_playback;
+	SYSTEMTIME beg;
+	SYSTEMTIME end;
+	if(is_playback == 0){
+		res->play_handle = init_play_handle(slot,is_playback,beg,end);
+	}else{
+		beg.wYear = begYear;
+		beg.wMonth = begMonth;
+		beg.wDay = begDay;
+		beg.wHour = begHour;
+		beg.wMinute = begMinute;
+		beg.wSecond = begSecond;
+
+		end.wYear = endYear;
+		end.wMonth = endMonth;
+		end.wDay = endDay;
+		end.wHour = endHour;
+		end.wMinute = endMinute;
+		end.wSecond = endSecond;
+		__android_log_print(ANDROID_LOG_INFO, "decod_jni", "test :%d-%d-%d %d:%d:%d\n"
+					,beg.wYear, beg.wMonth,beg.wDay,beg.wHour,beg.wMinute,beg.wSecond);
+		res->play_handle = init_play_handle(slot,is_playback,beg,end);
+	}
+	return res->play_handle;
+}
+
+int Java_com_howell_ecameraap_HWCameraActivity_displayLocalFile
 (JNIEnv *env, jclass cls,jint slot, jint is_playback,jshort begYear,jshort begMonth,jshort begDay,jshort begHour
 		,jshort begMinute,jshort begSecond,jshort endYear,jshort endMonth,jshort endDay,jshort endHour,jshort endMinute
 		,jshort endSecond){
@@ -335,7 +489,7 @@ JNIEXPORT int JNICALL Java_com_howell_ecameraap_HWCameraActivity_display
 }
 
 //�˳�
-JNIEXPORT void JNICALL Java_com_howell_ecameraap_HWCameraActivity_quit
+void Java_com_howell_ecameraap_HWCameraActivity_quit
 (JNIEnv *env, jclass cls){
 	__android_log_print(ANDROID_LOG_INFO, "quit", "1");
 	int ret;
@@ -364,7 +518,7 @@ JNIEXPORT void JNICALL Java_com_howell_ecameraap_HWCameraActivity_quit
 	free(res);
 }
 
-JNIEXPORT int JNICALL Java_com_howell_ecameraap_HWCameraActivity_catchPicture
+int Java_com_howell_ecameraap_HWCameraActivity_catchPicture
 (JNIEnv *env, jclass cls, jstring j_path){
 	 __android_log_print(ANDROID_LOG_INFO, "jni", "catchPicture");
 	const char* path = (*env)-> GetStringUTFChars(env,j_path,NULL);
@@ -375,7 +529,7 @@ JNIEXPORT int JNICALL Java_com_howell_ecameraap_HWCameraActivity_catchPicture
 	return ret;
 }
 
-JNIEXPORT int JNICALL Java_com_howell_ecameraap_HWCameraActivity_setFlip
+int Java_com_howell_ecameraap_HWCameraActivity_setFlip
 (JNIEnv *env, jclass cls){
 	__android_log_print(ANDROID_LOG_INFO, "jni", "setFlip");
 	int is_flip;
@@ -386,13 +540,13 @@ JNIEXPORT int JNICALL Java_com_howell_ecameraap_HWCameraActivity_setFlip
 	return ret;
 }
 
-JNIEXPORT int JNICALL Java_com_howell_ecameraap_HWCameraActivity_getStreamLen
+int Java_com_howell_ecameraap_HWCameraActivity_getStreamLen
 (JNIEnv *env, jobject obj){
 	__android_log_print(ANDROID_LOG_INFO, "jni", "getStreamLen");
 	return res->stream_len;
 }
 
-JNIEXPORT void JNICALL Java_com_howell_ecameraap_HWCameraActivity_changeToD1
+void Java_com_howell_ecameraap_HWCameraActivity_changeToD1
 (JNIEnv *env, jobject obj){
 	__android_log_print(ANDROID_LOG_INFO, "jni", "changeToD1");
 	__android_log_print(ANDROID_LOG_INFO, "quit", "1");
@@ -407,7 +561,7 @@ JNIEXPORT void JNICALL Java_com_howell_ecameraap_HWCameraActivity_changeToD1
 	__android_log_print(ANDROID_LOG_INFO, "jni", "live_stream_handle: %d",res->live_stream_handle);
 }
 
-JNIEXPORT void JNICALL Java_com_howell_ecameraap_HWCameraActivity_changeTo720P
+void Java_com_howell_ecameraap_HWCameraActivity_changeTo720P
 (JNIEnv *env, jobject obj){
 	__android_log_print(ANDROID_LOG_INFO, "jni", "changeTo720P");
 	__android_log_print(ANDROID_LOG_INFO, "quit", "1");
@@ -422,7 +576,7 @@ JNIEXPORT void JNICALL Java_com_howell_ecameraap_HWCameraActivity_changeTo720P
 	__android_log_print(ANDROID_LOG_INFO, "jni", "live_stream_handle: %d",res->live_stream_handle);
 }
 
-JNIEXPORT void JNICALL Java_com_howell_ecameraap_HWCameraActivity_playBackPositionChange
+void Java_com_howell_ecameraap_HWCameraActivity_playBackPositionChange
 (JNIEnv *env, jobject obj,jshort begYear,jshort begMonth,jshort begDay,jshort begHour
 		,jshort begMinute,jshort begSecond,jshort endYear,jshort endMonth,jshort endDay,jshort endHour,jshort endMinute
 		,jshort endSecond){
@@ -501,7 +655,7 @@ SYSTEMTIME get_replay_beg_systime(JNIEnv *env,jobject replay){
 	return beg;
 }
 
-JNIEXPORT int JNICALL Java_com_howell_ecameraap_VedioList_getListByPage
+int Java_com_howell_ecameraap_VedioList_getListByPage
 (JNIEnv *env, jclass cls,int user_handle,int slot,int stream,jobject replay,int type,int order_by_time,jobject page_info){
 	//time_t nowtime;
 	//struct tm *timeinfo;
@@ -542,7 +696,7 @@ JNIEXPORT int JNICALL Java_com_howell_ecameraap_VedioList_getListByPage
 	return file_list_handle;
 }
 
-JNIEXPORT int JNICALL Java_com_howell_ecameraap_HWCameraActivity_getReplayListCount
+int Java_com_howell_ecameraap_HWCameraActivity_getReplayListCount
 (JNIEnv *env, jclass cls){
 	 time_t nowtime;
 	 struct tm *timeinfo;
@@ -598,7 +752,7 @@ JNIEXPORT int JNICALL Java_com_howell_ecameraap_HWCameraActivity_getReplayListCo
 	return file_list_handle;
 }
 
-JNIEXPORT jobjectArray JNICALL Java_com_howell_ecameraap_VedioList_getReplayList
+jobjectArray Java_com_howell_ecameraap_VedioList_getReplayList
 (JNIEnv *env, jclass cls ,int file_list_handle,int count){
 	__android_log_print(ANDROID_LOG_INFO, "jni", "getReplayList file_list_handle:%d",file_list_handle);
 	int i ,type;
@@ -734,19 +888,19 @@ JNIEXPORT jobjectArray JNICALL Java_com_howell_ecameraap_VedioList_getReplayList
 	return myReturn;*/
 }
 
-JNIEXPORT void JNICALL Java_com_howell_ecameraap_VedioList_closeFileList
+void Java_com_howell_ecameraap_VedioList_closeFileList
 (JNIEnv *env, jclass cls ,int file_list_handle){
 	int ret = hwnet_close_file_list(file_list_handle);
 	__android_log_print(ANDROID_LOG_INFO, "jni", "close list ret %d\n",ret);
 }
 
-JNIEXPORT void JNICALL Java_com_howell_ecameraap_HWCameraActivity_playbackPause
+void Java_com_howell_ecameraap_HWCameraActivity_playbackPause
 (JNIEnv *env, jclass cls,jboolean bPause){
 	int ret = hwplay_pause(res->play_handle,bPause);
 	__android_log_print(ANDROID_LOG_INFO, "jni", "pause %d",ret);
 }
 
-JNIEXPORT void JNICALL Java_com_howell_ecameraap_HWCameraActivity_ptzTurnLeft
+void Java_com_howell_ecameraap_HWCameraActivity_ptzTurnLeft
 (JNIEnv *env, jobject obj,jint slot){
 
 	ptz_ctrl_t ctrl;
@@ -763,7 +917,7 @@ JNIEXPORT void JNICALL Java_com_howell_ecameraap_HWCameraActivity_ptzTurnLeft
 
 }
 
-JNIEXPORT void JNICALL Java_com_howell_ecameraap_HWCameraActivity_ptzTurnRight
+void Java_com_howell_ecameraap_HWCameraActivity_ptzTurnRight
 (JNIEnv *env, jobject obj,jint slot){
 
 	ptz_ctrl_t ctrl;
@@ -779,7 +933,7 @@ JNIEXPORT void JNICALL Java_com_howell_ecameraap_HWCameraActivity_ptzTurnRight
 	__android_log_print(ANDROID_LOG_INFO, "jni", "ptzTurnStop ret:%d",ret);
 }
 
-JNIEXPORT void JNICALL Java_com_howell_ecameraap_HWCameraActivity_ptzTurnUp
+void Java_com_howell_ecameraap_HWCameraActivity_ptzTurnUp
 (JNIEnv *env, jobject obj,jint slot){
 	ptz_ctrl_t ctrl;
 	ctrl.slot = slot;
@@ -794,7 +948,7 @@ JNIEXPORT void JNICALL Java_com_howell_ecameraap_HWCameraActivity_ptzTurnUp
 	__android_log_print(ANDROID_LOG_INFO, "jni", "ptzTurnStop ret:%d",ret);
 }
 
-JNIEXPORT void JNICALL Java_com_howell_ecameraap_HWCameraActivity_ptzTurnDown
+void Java_com_howell_ecameraap_HWCameraActivity_ptzTurnDown
 (JNIEnv *env, jobject obj,jint slot){
 
 	ptz_ctrl_t ctrl;
@@ -810,7 +964,7 @@ JNIEXPORT void JNICALL Java_com_howell_ecameraap_HWCameraActivity_ptzTurnDown
 	__android_log_print(ANDROID_LOG_INFO, "jni", "ptzTurnStop ret:%d",ret);
 }
 
-JNIEXPORT void JNICALL Java_com_howell_ecameraap_HWCameraActivity_zoomTele
+void Java_com_howell_ecameraap_HWCameraActivity_zoomTele
 (JNIEnv *env, jobject obj,jint slot){
 
 	ptz_ctrl_t ctrl;
@@ -826,7 +980,7 @@ JNIEXPORT void JNICALL Java_com_howell_ecameraap_HWCameraActivity_zoomTele
 	__android_log_print(ANDROID_LOG_INFO, "jni", "stop ret:%d",ret);
 }
 
-JNIEXPORT void JNICALL Java_com_howell_ecameraap_HWCameraActivity_zoomWide
+void Java_com_howell_ecameraap_HWCameraActivity_zoomWide
 (JNIEnv *env, jobject obj,jint slot){
 
 	ptz_ctrl_t ctrl;
