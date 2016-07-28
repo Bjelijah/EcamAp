@@ -16,6 +16,7 @@ typedef  long FILE_STREAM_HANDLE;
 typedef  long FILE_LIST_HANDLE;
 typedef  long ALARM_STREAM_HANDLE;
 typedef  long VOICE_STREAM_HANDLE;
+typedef  long UDP_FILE_STREAM_HANDLE;
 
 enum HW_STREAM_TYPE
 {
@@ -1089,6 +1090,27 @@ BOOL hwnet_ipc_set_rfid_info(USER_HANDLE handle,net_rfid_info_t* rfid);
  * 获取YUV
  */
 BOOL hwnet_get_remote_yuv(USER_HANDLE handle,net_capture_yuv_req_t* req,char* buf,int buf_len,net_capture_yuv_response_t* yuv_info);
+
+
+/**
+ * 获取JPEG
+ */
+BOOL hwnet_get_jpg_buf(USER_HANDLE handle,net_capture_jpg_t* req,char* jpg_buf,int buf_len,int* jpg_len);
+
+
+/**
+ * udp回放
+ */
+typedef void udp_file_stream_fun(UDP_FILE_STREAM_HANDLE handle,const char* buf,int len,long userdata);
+UDP_FILE_STREAM_HANDLE hwnet_get_udp_file_stream(USER_HANDLE handle,int slot,int stream,rec_file_t* file_info,udp_file_stream_fun* fun,long user_data);
+BOOL hwnet_close_udp_file_stream(UDP_FILE_STREAM_HANDLE handle);
+
+
+/**
+ * wifi
+ */
+BOOL hwnet_get_wifi(USER_HANDLE handle,NetWlanAP* info);
+BOOL hwnet_set_wifi(USER_HANDLE handle,NetWlanAP* info);
 
 /*
  * 获取错误值

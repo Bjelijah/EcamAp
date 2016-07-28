@@ -59,6 +59,7 @@ public class VedioList extends Activity implements OnClickListener{
 	private Dialog waitDialog;
 	
 	private boolean isDownload;
+	private int stream = 0xff;
 	
 	static {
 		//System.loadLibrary("hwplay");
@@ -92,7 +93,7 @@ public class VedioList extends Activity implements OnClickListener{
 				rf.clear();
 				queryReplay = getEpoch2NowTime();
 				pagination = new Pagination(replayCount,0);
-				HWCameraActivity.fileListHandle = getListByPage(userHandle,0,1,queryReplay,0,1,pagination);
+				HWCameraActivity.fileListHandle = getListByPage(userHandle,0,stream,queryReplay,0,1,pagination);
 				Log.e("onFirstRefresh", pagination.toString());
 				if(HWCameraActivity.fileListHandle == -1){
 					handler.sendEmptyMessage(REFRESHFAIL);
@@ -115,7 +116,7 @@ public class VedioList extends Activity implements OnClickListener{
 							return null;
 						}
 						pagination = new Pagination(replayCount,pagination.page_no + 1);
-						HWCameraActivity.fileListHandle = getListByPage(userHandle,0,1,queryReplay,0,1,pagination);
+						HWCameraActivity.fileListHandle = getListByPage(userHandle,0,stream,queryReplay,0,1,pagination);
 						Log.e("onFootRefresh", pagination.toString());
 						rf.addAll(Arrays.asList(getReplayList(HWCameraActivity.fileListHandle,replayCount)));
 						adapter.setData(initData(rf));
@@ -143,7 +144,7 @@ public class VedioList extends Activity implements OnClickListener{
 				userHandle = vedioListLogin(ip);
 				if(userHandle != -1){
 					pagination = new Pagination(replayCount,0);
-					HWCameraActivity.fileListHandle = getListByPage(userHandle,0,1,queryReplay,0,1,pagination);
+					HWCameraActivity.fileListHandle = getListByPage(userHandle,0,stream,queryReplay,0,1,pagination);
 					Log.e("onFirstRefresh", pagination.toString());
 					if(HWCameraActivity.fileListHandle == -1){
 						handler.sendEmptyMessage(REFRESHFAIL);
@@ -321,23 +322,7 @@ public class VedioList extends Activity implements OnClickListener{
 	        holder.name.setOnClickListener(VedioList.this);
 	        holder.downloadIcon.setOnClickListener(VedioList.this);
 	        holder.downloadIcon.setTag(position);
-	        String fileName = Environment.getExternalStorageDirectory()+"/eCamera_AP/"+removeMarks(ssid)+"-"+replayFile.begYear+replayFile.begMonth+replayFile.begDay+replayFile.begHour+replayFile.begMinute+replayFile.begSecond+".hwr";
-//	        if(new File(fileName).exists()){
-//	        	holder.progress.setText("瀹屾垚");
-//	 	        holder.downloadIcon.setImageDrawable(getResources().getDrawable(R.drawable.delete));
-//	        }else{
-//	        	Log.e("", "position:"+position);
-//		        holder.progress.setText("");
-//		        holder.downloadIcon.setImageDrawable(getResources().getDrawable(R.drawable.dowload));
-//		        for(Integer index : downloadList){
-//		        	Log.e("", "downloadindex:"+index+",position:"+position);
-//		        	if(position == index){
-//		        		holder.downloadIcon.setImageDrawable(getResources().getDrawable(R.drawable.progress_blue));
-//		        		holder.progress.setText("0%");
-//		        		break;
-//		        	}
-//		        }
-//	        }
+	        String fileName = Environment.getExternalStorageDirectory()+"/eCamera_AP/"+/*removeMarks(ssid)+"-"+*/replayFile.begYear+replayFile.begMonth+replayFile.begDay+replayFile.begHour+replayFile.begMinute+replayFile.begSecond+".hwr";
             return convertView;
         }
 		
@@ -401,7 +386,7 @@ public class VedioList extends Activity implements OnClickListener{
             // TODO Auto-generated method stub
         	rf.clear();
         	pagination = new Pagination(replayCount,0);
-			HWCameraActivity.fileListHandle = getListByPage(userHandle,0,1,queryReplay,0,1,pagination);
+			HWCameraActivity.fileListHandle = getListByPage(userHandle,0,stream,queryReplay,0,1,pagination);
 			if(HWCameraActivity.fileListHandle == -1){
 				handler.sendEmptyMessage(REFRESHFAIL);
 				return null;

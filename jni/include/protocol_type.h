@@ -647,6 +647,40 @@ typedef struct {
     int reserved[32];
 } NetGetRecord;
 
+typedef struct
+{
+    int slot;
+    int stream;
+    int type;
+    int quality;
+    char reserve[16];
+}net_capture_jpg_t;
+
+typedef struct UdpPlayback {
+    int slot;
+    int stream;
+    int port;
+    char ip[32];
+    rec_file_t info;
+    uint8_t reserved[16];
+}UdpPlayback;
+
+typedef struct {
+    char ssid[32];
+    char key[64];
+    int32_t channel;
+
+#define WIFI_OPEN     0
+#define WIFI_WEP64      1
+#define WIFI_WEP128     2
+#define WIFI_WPA        3
+#define WIFI_WPA2       4
+    uint32_t encrypt;
+    uint32_t flag; // set flag bits, bit-0:ssid bit-1:password bit-2:channel bit-3:crypto_type
+    uint32_t reserved[2];
+}NetWlanAP;
+
+
 #endif
 
 

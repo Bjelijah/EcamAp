@@ -32,7 +32,8 @@ struct StreamResource
 	jobject obj;
 	pthread_mutex_t lock_put;
 
-	FILE *foutput;
+	FILE *foutput;	//下载文件
+	int is_exit;	//退出标记位
 	//int is_mediahead_ready;
 	//int row,col;
 	//int color_mode;
@@ -64,13 +65,12 @@ void on_live_stream_fun(LIVE_STREAM_HANDLE handle,int stream_type,const char* bu
 }
 
 void on_file_stream_fun(FILE_STREAM_HANDLE handle,const char* buf,int len,long userdata){
-	//if(res->is_download == 1){//下载
-		//FILE *foutput = fopen("/sdcard/eCamera_AP/test.hwr", "ab");
-	//	fwrite(buf, sizeof(buf), len, foutput);
-		//fclose(foutput);
-	//}
 	res->stream_len += len;
 	int ret = hwplay_input_data(res->play_handle, buf ,len);
+	while(ret <= 0 && res->is_exit == 0){
+		usleep(10000);
+		ret = hwplay_input_data(res->play_handle, buf ,len);
+	}
 }
 
 void on_download_file_stream_fun_ex(FILE_STREAM_HANDLE handle,const char* buf,int len,long userdata){
@@ -87,7 +87,7 @@ void on_download_file_stream_fun(FILE_STREAM_HANDLE handle,const char* buf,int l
 	__android_log_print(ANDROID_LOG_INFO, "on_download_file_stream_fun", "len:%d",len);
 	pthread_mutex_lock(&res->lock_put);
 	while(res->foutput == NULL){
-		__android_log_print(ANDROID_LOG_INFO, "on_download_file_stream_fun", "sleep");
+		//__android_log_print(ANDROID_LOG_INFO, "on_download_file_stream_fun", "sleep");
 		sleep(0.5);
 	}
 	if(res->foutput != NULL){
@@ -150,7 +150,7 @@ static void on_yuv_callback_ex(PLAY_HANDLE handle,
 									 unsigned long long time,
 									 long user)
 {	
-	//__android_log_print(ANDROID_LOG_INFO, "jni", "start decode  time: %llu",time);
+	//__android_log_print(ANDROID_LOG_INFO, "jni", "on_yuv_callback_ex: %llu",time);
 	//sdl_display_input_data(y,u,v,width,height,time);
 	yv12gl_display(y,u,v,width,height,time);
 }
@@ -265,10 +265,10 @@ PLAY_HANDLE init_download_play_handle(int user_handle,int slot ,SYSTEMTIME beg,S
 		return -1;
 	}
 	//res->file_stream_handle = hwnet_get_file_stream(res->user_handle,slot,beg,end,on_file_stream_fun,0,&file_info);
-	__android_log_print(ANDROID_LOG_INFO, "jni", "download_file_stream_handle: %d total_len:%d",res->download_file_stream_handle,file_info.len);
-	int b = hwnet_get_file_stream_head(res->download_file_stream_handle,(char*)&media_head,1024,&res->media_head_len);
+	LOGI("download_file_stream_handle: %d total_len:%d",res->download_file_stream_handle,file_info.len);
+	int ret = hwnet_get_file_stream_head(res->download_file_stream_handle,(char*)&media_head,1024,&res->media_head_len);
 	//media_head.adec_code = 0xa;
-	__android_log_print(ANDROID_LOG_INFO, "jni", "hwnet_get_file_stream_head ret:%d",b);
+	LOGI("jni", "hwnet_get_file_stream_head ret:%d",ret);
 	//res->is_mediahead_ready = 1;
 	//LOGE("file_name:%s",file_name);
 	FILE *foutput = fopen(file_name, "wb");
@@ -303,6 +303,7 @@ static void create_resource()
   //total_file_list_count = 0;
   is_first_stream = 0;
   res->stream_len = 0;
+  res->is_exit = 0;
   //res->is_mediahead_ready = 0;
   if (res == NULL) return;
 }
@@ -426,38 +427,28 @@ int Java_com_howell_ecameraap_VedioList_vedioListLogout
 	return ret;
 }
 
-int Java_com_howell_ecameraap_HWCameraActivity_display
-(JNIEnv *env, jclass cls,jint slot, jint is_playback,jshort begYear,jshort begMonth,jshort begDay,jshort begHour
-		,jshort begMinute,jshort begSecond,jshort endYear,jshort endMonth,jshort endDay,jshort endHour,jshort endMinute
-		,jshort endSecond){
-	__android_log_print(ANDROID_LOG_INFO, "!!!", "display slot:%d",slot);
-	res->is_playback = is_playback;
-	SYSTEMTIME beg;
-	SYSTEMTIME end;
-	if(is_playback == 0){
-		res->play_handle = init_play_handle(slot,is_playback,beg,end);
-	}else{
-		beg.wYear = begYear;
-		beg.wMonth = begMonth;
-		beg.wDay = begDay;
-		beg.wHour = begHour;
-		beg.wMinute = begMinute;
-		beg.wSecond = begSecond;
-
-		end.wYear = endYear;
-		end.wMonth = endMonth;
-		end.wDay = endDay;
-		end.wHour = endHour;
-		end.wMinute = endMinute;
-		end.wSecond = endSecond;
-		__android_log_print(ANDROID_LOG_INFO, "decod_jni", "test :%d-%d-%d %d:%d:%d\n"
-					,beg.wYear, beg.wMonth,beg.wDay,beg.wHour,beg.wMinute,beg.wSecond);
-		res->play_handle = init_play_handle(slot,is_playback,beg,end);
-	}
+int Java_com_howell_ecameraap_LocalFilePlayer_displayLocalFile(JNIEnv *env, jclass cls,jstring fileName){
+	hwplay_init(1,0,0);
+	create_resource();
+	const char* path = (*env)-> GetStringUTFChars(env,fileName,NULL);
+	__android_log_print(ANDROID_LOG_INFO, "JNI", "path is:%s",path);
+	res->play_handle = hwplay_open_local_file(path);
+	(*env)->ReleaseStringUTFChars(env,fileName,path);
+	hwplay_open_sound(res->play_handle);
+	__android_log_print(ANDROID_LOG_INFO, "JNI", "ph is:%d",res->play_handle);
+	hwplay_register_yuv_callback_ex(res->play_handle,on_yuv_callback_ex,0);
+	hwplay_register_audio_callback(res->play_handle,on_audio_callback,0);
+	hwplay_play(res->play_handle);
 	return res->play_handle;
 }
 
-int Java_com_howell_ecameraap_HWCameraActivity_displayLocalFile
+int Java_com_howell_ecameraap_LocalFilePlayer_localFileQuit(JNIEnv *env, jclass cls){
+	hwplay_stop(res->play_handle);
+	//hwnet_release();
+	free(res);
+}
+
+int Java_com_howell_ecameraap_HWCameraActivity_display
 (JNIEnv *env, jclass cls,jint slot, jint is_playback,jshort begYear,jshort begMonth,jshort begDay,jshort begHour
 		,jshort begMinute,jshort begSecond,jshort endYear,jshort endMonth,jshort endDay,jshort endHour,jshort endMinute
 		,jshort endSecond){
@@ -492,6 +483,7 @@ int Java_com_howell_ecameraap_HWCameraActivity_displayLocalFile
 void Java_com_howell_ecameraap_HWCameraActivity_quit
 (JNIEnv *env, jclass cls){
 	__android_log_print(ANDROID_LOG_INFO, "quit", "1");
+	res->is_exit = 1;
 	int ret;
 	if(!res->is_playback){
 		ret = hwnet_close_live_stream(res->live_stream_handle);
@@ -513,7 +505,7 @@ void Java_com_howell_ecameraap_HWCameraActivity_quit
 	__android_log_print(ANDROID_LOG_INFO, "quit", "5");
 	hwplay_stop(res->play_handle);
 	__android_log_print(ANDROID_LOG_INFO, "quit", "6");
-	hwnet_release();
+	//hwnet_release();
 	__android_log_print(ANDROID_LOG_INFO, "quit", "7");
 	free(res);
 }
@@ -994,4 +986,53 @@ void Java_com_howell_ecameraap_HWCameraActivity_zoomWide
 	ctrl.cmd = 7;//Stop
 	ret = hwnet_ptz_ctrl(res->user_handle, &ctrl);
 	__android_log_print(ANDROID_LOG_INFO, "jni", "stop ret:%d",ret);
+}
+
+int Java_com_howell_ecameraap_SettingActivity_getWifi(JNIEnv *env, jobject obj,jstring j_ip){
+	//login
+	hwnet_init(5888);
+	const char* ip = (*env)-> GetStringUTFChars(env,j_ip,NULL);
+	int user_handle = hwnet_login(ip,5198,"admin","12345");
+	if(user_handle == -1){
+		__android_log_print(ANDROID_LOG_INFO, "jni", "user_handle fail");
+		return 0;
+	}
+	NetWlanAP info;
+	int ret = hwnet_get_wifi(user_handle,&info);
+	LOGE("info.ssid:%s,info.key:%s,info.channel:%s,info.flag:%d",info.ssid,info.key,info.channel,info.flag);
+	//logout
+	(*env)->ReleaseStringUTFChars(env,j_ip,ip);
+	hwnet_logout(user_handle);
+	return ret;
+
+}
+
+int Java_com_howell_ecameraap_SettingActivity_setWifi(JNIEnv *env, jobject obj,jstring j_ip,jstring j_ssid,jstring j_password){
+	//login
+	hwnet_init(5888);
+	const char* ip = (*env)-> GetStringUTFChars(env,j_ip,NULL);
+	int user_handle = hwnet_login(ip,5198,"admin","12345");
+	if(user_handle == -1){
+		__android_log_print(ANDROID_LOG_INFO, "jni", "user_handle fail");
+		return 0;
+	}else{
+		__android_log_print(ANDROID_LOG_INFO, "jni", "user_handle success");
+	}
+	//set wifi info
+	const char* ssid = (*env)-> GetStringUTFChars(env,j_ssid,NULL);
+	const char* password = (*env)-> GetStringUTFChars(env,j_password,NULL);
+	NetWlanAP info;
+	info.flag = 3;
+	strcpy(info.ssid,ssid);
+	strcpy(info.key,password);
+	int ret = hwnet_set_wifi(user_handle,&info);
+	__android_log_print(ANDROID_LOG_INFO, "jni", "ret:%d",ret);
+	//free resource
+	(*env)->ReleaseStringUTFChars(env,j_ip,ip);
+	(*env)->ReleaseStringUTFChars(env,j_ssid,ssid);
+	(*env)->ReleaseStringUTFChars(env,j_password,password);
+	//logout
+	hwnet_logout(user_handle);
+	return ret;
+
 }

@@ -30,7 +30,7 @@
         android:textSize="15sp" />
 
     <ImageView
-        android:id="@+id/iv_icon"
+        android:id="@+id/iv_icon_set_wifi"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"

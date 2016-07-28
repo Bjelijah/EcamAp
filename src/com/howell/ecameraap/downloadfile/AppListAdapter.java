@@ -150,7 +150,7 @@ public class AppListAdapter extends BaseAdapter {
 			//holder.size.setText((app.downloadSize * 100.0f / app.size) + "%");
 		}
 		//如果文件已存在则按钮状态为已下载
-		String fileName = Environment.getExternalStorageDirectory()+"/eCamera_AP/"+removeMarks(ssid)+"-"+app.replay.begYear+app.replay.begMonth+app.replay.begDay+app.replay.begHour+app.replay.begMinute+app.replay.begSecond+".hwr";
+		String fileName = Environment.getExternalStorageDirectory()+"/eCamera_AP/"/*emoveMarks(ssid)+"-"*/+app.replay.begYear+app.replay.begMonth+app.replay.begDay+app.replay.begHour+app.replay.begMinute+app.replay.begSecond+".hwr";
 		if(new File(fileName).exists()){
 			app.downloadState = DownloadManager.DOWNLOAD_STATE_FINISH;
 			holder.size.setText("100%");
@@ -184,7 +184,7 @@ public class AppListAdapter extends BaseAdapter {
 				app.downloadState = DownloadManager.DOWNLOAD_STATE_WAITING;
 				downloadFile.downloadSize = app.downloadSize;
 				downloadFile.totalSize = app.size;
-				downloadFile.replayName = Environment.getExternalStorageDirectory()+"/eCamera_AP/"+removeMarks(ssid)+"-"+app.replay.begYear+app.replay.begMonth+app.replay.begDay+app.replay.begHour+app.replay.begMinute+app.replay.begSecond+".hwr";
+				downloadFile.replayName = Environment.getExternalStorageDirectory()+"/eCamera_AP/"+app.replay.begYear+app.replay.begMonth+app.replay.begDay+app.replay.begHour+app.replay.begMinute+app.replay.begSecond+".hwr";
 				downloadFile.replay = app.replay;
 				holder.btn.setText("排队中");
 			    changeBtnStyle(holder.btn, false);
@@ -242,7 +242,7 @@ public class AppListAdapter extends BaseAdapter {
 	{
 		int visiblePos = listView.getFirstVisiblePosition();
 		int offset = index - visiblePos + 1;
-		//Log.e("", "index="+index+"visiblePos="+visiblePos+"offset="+offset);
+		Log.e("", "index="+index+"visiblePos="+visiblePos+"offset="+offset);
 		// 只有在可见区域才更新
 		if(offset < 0) return;
 		

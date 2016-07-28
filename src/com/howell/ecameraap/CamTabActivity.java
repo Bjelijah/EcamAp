@@ -41,7 +41,7 @@ public class CamTabActivity extends TabActivity implements
                 .newTabSpec("settings")
                 .setIndicator(getResources().getString(R.string.download_list),
                         getResources().getDrawable(R.drawable.setting))
-                .setContent(new Intent(this, DownloadListActivity.class)));
+                .setContent(new Intent(this, LocalFileListActivity.class)));
         mHost.setCurrentTab(0);  
         
         

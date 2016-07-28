@@ -13,27 +13,51 @@ import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListView;
 
 import com.example.com.howell.ecameraap.R;
 import com.howell.db.Camera;
 import com.howell.db.DBManager;
-import com.howell.ecameraap.downloadfile.DownloadManager;
 
 public class CameraList extends Activity implements OnItemClickListener{
-	private ImageButton addCam/*,back*/;
+	private ImageButton addCam,setting/*,back*/;
 	private ListView cameraList;
 	private ArrayList<Camera> cameras;
     private DBManager mDBManager; 
     private ListAdapter adapter;
     private boolean isMove = false;//限制滑动时触发OnItemClickListener的标志位
     
+//    private Button test;
+    
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.camera_list);
+//		test = (Button)findViewById(R.id.test);
+//		test.setOnClickListener(new OnClickListener() {
+//			
+//			@Override
+//			public void onClick(View arg0) {
+//				// TODO Auto-generated method stub
+//				Intent intent = new Intent(CameraList.this,LocalFilePlayer.class);
+//				startActivity(intent);
+//			}
+//		});
+		
+		setting = (ImageButton)findViewById(R.id.ib_setting);
+		setting.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View arg0) {
+				// TODO Auto-generated method stub
+				Intent intent = new Intent(CameraList.this,SettingActivity.class);
+				startActivity(intent);
+			}
+		});
+		
 		addCam = (ImageButton)findViewById(R.id.ib_add_cam);
 		addCam.setOnClickListener(new OnClickListener() {
 			

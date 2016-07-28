@@ -40,7 +40,7 @@ public class Login extends Activity{
 			protected void onPostExecute(Void result) {
 				// TODO Auto-generated method stub
 				super.onPostExecute(result);
-				Intent intent = new Intent(Login.this,CameraList.class);
+				Intent intent = new Intent(Login.this,CamTabActivity.class);
 				startActivity(intent);
 				finish();
 			}

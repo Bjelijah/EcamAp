@@ -57,7 +57,7 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 	private int isPlayBack;
 	private int slot;
 	private SeekBar replaySeekBar;
-	private ImageButton vedioList,circle,quality,sound,catch_picture,download;
+	private ImageButton vedioList,circle,quality,sound,catch_picture,download,pause;
 	private TextView streamLen;
 	private LinearLayout surfaceControl;
 	
@@ -83,8 +83,8 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 	private final static String photoPath = Environment.getExternalStorageDirectory().getAbsolutePath()+"/eCamera_Ap";
 	
 	private GestureDetector mGestureDetector;
-	private TextView zoomTele,zoomWide;
-	private RelativeLayout ptzControl;
+//	private TextView zoomTele,zoomWide;
+//	private RelativeLayout ptzControl;
 	
 	ProgressDialog downloadDialog;  
 	int dataLen;
@@ -155,7 +155,7 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
  		isPlayBack = intent.getIntExtra("playback", 0);
  		slot = intent.getIntExtra("slot", slot);
  		replaySeekBar = (SeekBar)findViewById(R.id.replaySeekBar);
- 		//pause = (ImageButton)findViewById(R.id.ib_pause);
+ 		pause = (ImageButton)findViewById(R.id.ib_pause);
  		vedioList = (ImageButton)findViewById(R.id.vedio_list);
  		circle = (ImageButton)findViewById(R.id.camera_circle);
  		quality = (ImageButton)findViewById(R.id.quality);
@@ -164,14 +164,14 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
  		streamLen = (TextView)findViewById(R.id.tv_stream_len);
  		surfaceControl = (LinearLayout)findViewById(R.id.surface_icons);
 // 		download = (ImageButton)findViewById(R.id.download);
- 		zoomTele = (TextView)findViewById(R.id.player_zoomtele);
- 		zoomWide = (TextView)findViewById(R.id.player_zoomwide);
- 		ptzControl = (RelativeLayout)findViewById(R.id.player_ptz_control);
+// 		zoomTele = (TextView)findViewById(R.id.player_zoomtele);
+// 		zoomWide = (TextView)findViewById(R.id.player_zoomwide);
+// 		ptzControl = (RelativeLayout)findViewById(R.id.player_ptz_control);
  		handler = new MyHandler();
  		
  		if(isPlayBack == 0){
  			replaySeekBar.setVisibility(View.GONE);
- 	 		//pause.setVisibility(View.GONE);
+ 	 		pause.setVisibility(View.GONE);
  	 		vedioList.setVisibility(View.VISIBLE);
  	 		//download.setVisibility(View.GONE);
  	 		circle.setVisibility(View.VISIBLE);
@@ -179,7 +179,7 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
  	 		ip = intent.getStringExtra("ip");
  		}else{
  			replaySeekBar.setVisibility(View.VISIBLE);
- 	 		//pause.setVisibility(View.VISIBLE);
+ 	 		pause.setVisibility(View.VISIBLE);
  	 		vedioList.setVisibility(View.GONE);
  	 		//download.setVisibility(View.VISIBLE);
  	 		circle.setVisibility(View.GONE);
@@ -238,9 +238,9 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
  		sound.setOnClickListener(listener);
  		vedioList.setOnClickListener(listener);
  		//download.setOnClickListener(listener);
- 		zoomTele.setOnClickListener(listener);
- 		zoomWide.setOnClickListener(listener);
- 		//pause.setOnClickListener(listener);
+// 		zoomTele.setOnClickListener(listener);
+// 		zoomWide.setOnClickListener(listener);
+ 		pause.setOnClickListener(listener);
     }
     
     @SuppressLint("SdCardPath")
@@ -282,7 +282,6 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 			case R.id.sound:
 				if(isAudioOpen){
 					audioPause();
-					
 				}else {
 					audioPlay();
 				}
@@ -295,12 +294,24 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 				task.execute();
 				break;
 				
+			case R.id.ib_pause:
+				ImageButton image = (ImageButton)view;
+				if(!bPause){
+					bPause = true;
+					image.setImageResource(R.drawable.img_play);
+				}else{
+					bPause = false;
+					image.setImageResource(R.drawable.img_pause);
+				}
+				playbackPause(bPause);
+				break;
+				
 //			case R.id.download:
 //				createProgressDialog();
 //				DownloadFreshTask downloadFreshTask = new DownloadFreshTask();
 //				downloadFreshTask.execute();
 //				break;
-			case R.id.player_zoomtele:
+			/*case R.id.player_zoomtele:
 				new AsyncTask<Void, Integer, Void>(){
 
 					@Override
@@ -324,7 +335,7 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 					
 				}.execute();
 				
-				break;
+				break;*/
 			default:
 				break;
 			}
@@ -570,9 +581,9 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 	}
 
 	public void audioWrite() {
-//		Log.d("audio","audio data len: "+mAudioDataLength);
+	//	Log.i("log123","audio data len: "+mAudioDataLength);
 //		for (int i=0; i<10; i++) {
-//			Log.d("audio","data "+i+" is "+mAudioData[i]);
+//			Log.i("log123","data "+i+" is "+mAudioData[i]);
 //		}
 		mAudioTrack.write(mAudioData,0,mAudioDataLength);
 	}
@@ -626,12 +637,12 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 		if (this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){
 			Log.i("info", "onConfigurationChanged landscape"); 
 			surfaceControl.setVisibility(View.GONE);
-			ptzControl.setVisibility(View.GONE);
+			//ptzControl.setVisibility(View.GONE);
 			isSufaceControlShown = false;
 		} else if(this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
 			Log.i("info", "onConfigurationChanged PORTRAIT"); 
 			surfaceControl.setVisibility(View.VISIBLE);
-			ptzControl.setVisibility(View.VISIBLE);
+			//ptzControl.setVisibility(View.VISIBLE);
 			isSufaceControlShown = true;
 		}
 	}
@@ -713,11 +724,11 @@ public class HWCameraActivity extends Activity implements Callback, OnGestureLis
 		if(PhoneConfig.getPhoneHeight(this) < PhoneConfig.getPhoneWidth(this)){
 			if(isSufaceControlShown){
 				surfaceControl.setVisibility(View.GONE);
-				ptzControl.setVisibility(View.GONE);
+				//ptzControl.setVisibility(View.GONE);
 				isSufaceControlShown = false;
 			}else{
 				surfaceControl.setVisibility(View.VISIBLE);
-				ptzControl.setVisibility(View.VISIBLE);
+				//ptzControl.setVisibility(View.VISIBLE);
 				isSufaceControlShown = true;
 			}
 		}

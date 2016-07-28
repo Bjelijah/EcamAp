@@ -53,7 +53,7 @@ void yuv12gl_set_enable(int enable)
 void yv12gl_display(const unsigned char * y, const unsigned char *u, unsigned char *v, int width, int height, unsigned long long time)
 {
 //LOGE("display");
-//__android_log_print(ANDROID_LOG_INFO, "yv12gl_display", "time: %llu",time);
+//LOGE("yv12gl_display timestamp: %llu",time);
   if (!self.enable) return;
   self.time = time/1000;
   //LOGE("progress self.time :%llu",self.time);

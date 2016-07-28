@@ -5,7 +5,7 @@
     android:versionName="1.0.2-AP-1.0.0" >
 
     <uses-sdk
-        android:minSdkVersion="8"
+        android:minSdkVersion="11"
         android:targetSdkVersion="12" />
     
 	<uses-permission android:name="android.permission.INTERNET" />
@@ -39,7 +39,19 @@
         </activity>
         
         <activity
+            android:name="com.howell.ecameraap.LocalFilePlayer"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:theme="@android:style/Theme.Light.NoTitleBar.Fullscreen" >
+        </activity>
+        
+        <activity
             android:name="com.howell.ecameraap.CameraList"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:theme="@android:style/Theme.Light.NoTitleBar.Fullscreen" >
+        </activity>
+        
+        <activity
+            android:name="com.howell.ecameraap.SettingActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:theme="@android:style/Theme.Light.NoTitleBar.Fullscreen" >
         </activity>
@@ -58,6 +70,12 @@
         
         <activity
             android:name="com.howell.ecameraap.DownloadListActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:theme="@android:style/Theme.Light.NoTitleBar.Fullscreen" >
+        </activity>
+        
+        <activity
+            android:name="com.howell.ecameraap.LocalFileListActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:theme="@android:style/Theme.Light.NoTitleBar.Fullscreen" >
         </activity>
