@@ -1,7 +1,6 @@
 package com.howell.ecameraap;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import com.example.com.howell.ecameraap.R;
 import com.howell.db.Camera;
